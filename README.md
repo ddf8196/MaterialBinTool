@@ -8,5 +8,5 @@ RenderDragon着色器提取工具 （目前仅支持MCBE 1.17.40安卓版）
 
 ## 使用
 1. 安装Java8或更高版本
-2. 解压出apk里的assets\renderer\materials目录
+2. 解压出apk中的assets/renderer/materials目录
 3. `java -jar MaterialBinTool-0.1.0-all.jar 解压出的materials目录的路径`
