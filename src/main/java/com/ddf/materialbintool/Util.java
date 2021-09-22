@@ -8,16 +8,14 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import java.util.List;
 
 public class Util {
-    static String flagModeListToString(List<FlagMode> flagModeList, boolean comment) {
+    static String flagModeListToString(List<FlagMode> flagModeList) {
         if (flagModeList.size() <= 0)
             return "";
-        StringBuilder stringBuilder = new StringBuilder(comment ? "//FlagMode\n" : "");
+        StringBuilder stringBuilder = new StringBuilder();
         for (FlagMode flagMode : flagModeList) {
-            if (comment)
-                stringBuilder.append("//");
             stringBuilder
                     .append(flagMode.str1)
-                    .append(" = ")
+                    .append("=")
                     .append(flagMode.str2)
                     .append("\n");
         }
@@ -28,10 +26,10 @@ public class Util {
     static String shaderInputListToString(List<ShaderInput> shaderInputList) {
         if (shaderInputList.size() <= 0)
             return "";
-        StringBuilder stringBuilder = new StringBuilder("//ShaderInput\n");
+        StringBuilder stringBuilder = new StringBuilder();
         for (ShaderInput shaderInput : shaderInputList) {
             stringBuilder
-                    .append("//name=")
+                    .append("name=")
                     .append(shaderInput.name)
                     .append(" type=")
                     .append(shaderInput.type.name())
@@ -52,13 +50,13 @@ public class Util {
     static String uniformListToString(List<MaterialUniform> uniformList) {
         if (uniformList.size() <= 0)
             return "";
-        StringBuilder stringBuilder = new StringBuilder("//Uniform\n");
+        StringBuilder stringBuilder = new StringBuilder();
         for (MaterialUniform materialUniform : uniformList) {
             stringBuilder
-                    .append("//name=")
+                    .append("name=")
                     .append(materialUniform.name)
                     .append(" type=")
-                    .append(materialUniform.type.name())
+                    .append(materialUniform.type)//.name())
                     .append(" count=")
                     .append(materialUniform.count)
                     .append(" unknownBytes=")
