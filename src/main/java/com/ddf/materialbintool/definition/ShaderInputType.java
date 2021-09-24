@@ -1,4 +1,4 @@
-package com.ddf.materialbintool;
+package com.ddf.materialbintool.definition;
 
 public enum ShaderInputType {
     Float,

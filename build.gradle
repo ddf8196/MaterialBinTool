@@ -19,6 +19,8 @@ repositories {
 
 dependencies {
     implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
+    implementation 'io.netty:netty-buffer:4.1.68.Final'
+    implementation 'com.google.code.gson:gson:2.8.8'
 }
 
 shadowJar {

@@ -1,4 +1,4 @@
-package com.ddf.materialbintool;
+package com.ddf.materialbintool.definition;
 
 public enum EncryptionVariants {
     None(0x4E4F4E45), //NONE

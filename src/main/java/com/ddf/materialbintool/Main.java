@@ -1,5 +1,9 @@
 package com.ddf.materialbintool;
 
+import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
+import com.ddf.materialbintool.util.ByteBufUtil;
+import io.netty.buffer.ByteBuf;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.io.*;
@@ -12,7 +16,7 @@ public class Main {
     	if (args.length <= 0)
     		return;
 		Path inputPath = Paths.get(args[0]);
-		outputDir = inputPath.resolve("out");
+		outputDir = inputPath.resolve("unpack");
 		if (!Files.exists(outputDir))
 			Files.createDirectories(outputDir);
 
@@ -25,8 +29,11 @@ public class Main {
 						if (!Files.exists(currentDir))
 							Files.createDirectories(currentDir);
 						byte[] bytes = Files.readAllBytes(path);
+						ByteBuf buf = ByteBufUtil.wrappedBuffer(bytes);
+
 						CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
-						cmd.loadFrom(bytes);
+						cmd.loadFrom(buf);
+
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
