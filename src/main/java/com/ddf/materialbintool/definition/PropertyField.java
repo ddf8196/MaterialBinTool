@@ -3,7 +3,6 @@ package com.ddf.materialbintool.definition;
 import com.ddf.materialbintool.util.ByteBufUtil;
 import io.netty.buffer.ByteBuf;
 
-import java.nio.ByteBuffer;
 
 public class PropertyField {
     private String name;
@@ -50,7 +49,7 @@ public class PropertyField {
                 }
                 break;
             }
-            case 5: {
+            case 5: { //ExternalUniformDeclaration
                 break;
             }
         }
@@ -79,7 +78,7 @@ public class PropertyField {
                 }
                 break;
             }
-            case 5: {
+            case 5: { //ExternalUniformDeclaration
                 break;
             }
         }
