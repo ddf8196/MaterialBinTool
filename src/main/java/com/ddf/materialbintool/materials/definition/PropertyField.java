@@ -1,4 +1,4 @@
-package com.ddf.materialbintool.definition;
+package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
 import io.netty.buffer.ByteBuf;
