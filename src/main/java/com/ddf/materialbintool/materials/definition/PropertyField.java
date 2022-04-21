@@ -1,11 +1,11 @@
 package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
+import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
 
-public class PropertyField {
-    private String name;
+public class PropertyField implements IData {
     private int unknownInt0;
     private short type;
     private boolean hasData;
@@ -15,9 +15,7 @@ public class PropertyField {
     public PropertyField() {
     }
 
-    public void readFrom(ByteBuf buf) {
-        name = ByteBufUtil.readString(buf);
-
+    public void read(ByteBuf buf) {
         type = buf.readShortLE();
         switch (type) {
             case 2: { //Vec4
@@ -55,8 +53,7 @@ public class PropertyField {
         }
     }
 
-    public void writeTo(ByteBuf buf) {
-        ByteBufUtil.writeString(buf, name);
+    public void write(ByteBuf buf) {
         buf.writeShortLE(type);
         switch (type) {
             case 2: { //Vec4

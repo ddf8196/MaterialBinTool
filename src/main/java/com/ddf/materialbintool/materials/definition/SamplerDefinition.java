@@ -1,32 +1,45 @@
 package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
+import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
-public class SamplerDefinition {
-    private byte unknownByte0;
-    private byte unknownByte1;
-    private byte unknownByte2;
-    private boolean unknownBool0;
-    private byte unknownByte3;
-    private String unknownStr0; //rgba16f / rgba8 / rg16f / r32ui
+public class SamplerDefinition implements IData {
+    public byte unknownByte0;
+    public byte unknownByte1;
+    public byte unknownByte2;
+    public boolean unknownBool0;
+    public byte unknownByte3;
+    public String unknownStr0; //rgba16f / rgba8 / rg16f / r32ui
 
-    private boolean unknownBool1;
-    private String unknownStr1; //white
+    public boolean hasUnknownInt;
+    public int unknownInt;
 
-    private boolean hasCustomTypeInfo;
-    private CustomTypeInfo customTypeInfo;
+    public boolean unknownBool1;
+    public String unknownStr1; //white
+
+    public boolean hasCustomTypeInfo;
+    public CustomTypeInfo customTypeInfo;
 
     public SamplerDefinition() {
     }
 
-    public void readFrom(ByteBuf buf) {
+    public void read(ByteBuf buf) {
         unknownByte0 = buf.readByte();
         unknownByte1 = buf.readByte();
         unknownByte2 = buf.readByte();
         unknownBool0 = buf.readBoolean();
         unknownByte3 = buf.readByte();
         unknownStr0 = ByteBufUtil.readString(buf);
+
+        int unkInt = buf.readIntLE();
+        if (unkInt == 1) {
+            hasUnknownInt = true;
+            unknownInt = unkInt;
+        } else {
+            hasUnknownInt = false;
+            buf.readerIndex(buf.readerIndex() - 4);
+        }
 
         unknownBool1 = buf.readBoolean();
         if (unknownBool1) {
@@ -41,13 +54,17 @@ public class SamplerDefinition {
         }
     }
 
-    public void writeTo(ByteBuf buf) {
+    public void write(ByteBuf buf) {
         buf.writeByte(unknownByte0);
         buf.writeByte(unknownByte1);
         buf.writeByte(unknownByte2);
         buf.writeBoolean(unknownBool0);
         buf.writeByte(unknownByte3);
         ByteBufUtil.writeString(buf, unknownStr0);
+
+        if (hasUnknownInt) {
+            buf.writeIntLE(unknownInt);
+        }
 
         buf.writeBoolean(unknownBool1);
         if (unknownBool1) {

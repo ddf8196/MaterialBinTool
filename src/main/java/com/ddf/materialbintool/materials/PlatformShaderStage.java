@@ -1,24 +1,25 @@
 package com.ddf.materialbintool.materials;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
+import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
 
-public class PlatformShaderStage {
+public class PlatformShaderStage implements IData {
     private String type;
     private String platform;
     private byte typeId; //Vertex 0  Fragment 1  Compute 2(?)  Unknown 3
     private byte platformId;
 
-    public void readFrom(ByteBuf buf) {
+    public void read(ByteBuf buf) {
         type = ByteBufUtil.readString(buf);
         platform = ByteBufUtil.readString(buf);
         typeId = buf.readByte();
         platformId = buf.readByte();
     }
 
-    public void writeTo(ByteBuf buf) {
+    public void write(ByteBuf buf) {
         ByteBufUtil.writeString(buf, type);
         ByteBufUtil.writeString(buf, platform);
         buf.writeByte(typeId);

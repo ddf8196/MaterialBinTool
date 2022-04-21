@@ -1,8 +1,9 @@
 package com.ddf.materialbintool.materials.definition;
 
+import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
-public class ShaderInput {
+public class ShaderInput implements IData {
     public ShaderInputType type;
     public byte unknownByte0;
     public byte unknownByte1;
@@ -17,7 +18,7 @@ public class ShaderInput {
     public ShaderInput() {
     }
 
-    public void readFrom(ByteBuf buf) {
+    public void read(ByteBuf buf) {
         type = ShaderInputType.get(buf.readByte());
         unknownByte0 = buf.readByte();
         unknownByte1 = buf.readByte();
@@ -34,7 +35,7 @@ public class ShaderInput {
         }
     }
 
-    public void writeTo(ByteBuf buf) {
+    public void write(ByteBuf buf) {
         buf.writeByte(type.ordinal());
         buf.writeByte(unknownByte0);
         buf.writeByte(unknownByte1);

@@ -16,9 +16,9 @@ public enum EncryptionVariants {
         return signature;
     }
 
-    public static EncryptionVariants getBySignature(int value) {
+    public static EncryptionVariants getBySignature(int signature) {
         for (EncryptionVariants encryptionVariants : values()) {
-            if (encryptionVariants.signature == value)
+            if (encryptionVariants.signature == signature)
                 return encryptionVariants;
         }
         return Unknown;
