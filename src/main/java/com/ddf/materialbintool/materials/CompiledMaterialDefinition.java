@@ -1,9 +1,7 @@
 package com.ddf.materialbintool.materials;
 
-import com.ddf.materialbintool.bgfx.BgfxShader;
 import com.ddf.materialbintool.definition.*;
 import com.ddf.materialbintool.util.ByteBufUtil;
-import com.ddf.materialbintool.util.Pair;
 import com.ddf.materialbintool.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -79,9 +77,10 @@ public class CompiledMaterialDefinition {
         int samplerDefinitionCount = buf.readByte();
         samplerDefinitionMap = new LinkedHashMap<>(samplerDefinitionCount);
         for (int i = 0; i < samplerDefinitionCount; i++) {
+            String name = ByteBufUtil.readString(buf);
 			SamplerDefinition samplerDefinition = new SamplerDefinition();
 			samplerDefinition.readFrom(buf);
-			samplerDefinitionMap.put(samplerDefinition.getName(), samplerDefinition);
+			samplerDefinitionMap.put(name, samplerDefinition);
         }
 
         short propertyFieldCount = buf.readShortLE();
@@ -143,9 +142,8 @@ public class CompiledMaterialDefinition {
 
         private boolean unknownBool0;
         private short unknownShort0;
-        private List<Pair<String, String>> unknownStringPairList;
 
-        private List<FlagMode> flagModeList;
+        private Map<String, String> unknownStringMap;
         private List<Variant> variantList;
 
         public Pass() {
@@ -166,21 +164,15 @@ public class CompiledMaterialDefinition {
             unknownBool0 = buf.readBoolean();
             if (unknownBool0) {
                 unknownShort0 = buf.readShortLE();
-                short unknownCount2 = buf.readShortLE();
-                unknownStringPairList = new ArrayList<>(unknownCount2);
-                for (int i = 0; i < unknownCount2; ++i) {
-                    Pair<String, String> pair = new Pair<>(ByteBufUtil.readString(buf), ByteBufUtil.readString(buf));
-                    unknownStringPairList.add(pair);
-                }
             }
 
-            short flagModeCount = buf.readShortLE();
-            flagModeList = new ArrayList<>(flagModeCount);
+            short unknownCount = buf.readShortLE();
+            unknownStringMap = new LinkedHashMap<>(unknownCount);
 
-            for (int j = 0; j < flagModeCount; ++j) {
-                FlagMode flagMode = new FlagMode();
-                flagMode.readFrom(buf);
-                flagModeList.add(flagMode);
+            for (int i = 0; i < unknownCount; ++i) {
+                String key = ByteBufUtil.readString(buf);
+                String value = ByteBufUtil.readString(buf);
+                unknownStringMap.put(key, value);
             }
 
             short variantCount = buf.readShortLE();
@@ -204,16 +196,12 @@ public class CompiledMaterialDefinition {
             buf.writeBoolean(unknownBool0);
             if (unknownBool0) {
                 buf.writeShortLE(unknownShort0);
-                buf.writeShortLE(unknownStringPairList.size());
-                for (Pair<String, String> pair : unknownStringPairList) {
-                    ByteBufUtil.writeString(buf, pair.getKey());
-                    ByteBufUtil.writeString(buf, pair.getValue());
-                }
             }
 
-            buf.writeShortLE(flagModeList.size());
-            for (FlagMode flagMode : flagModeList) {
-                flagMode.writeTo(buf);
+            buf.writeShortLE(unknownStringMap.size());
+            for (Map.Entry<String, String> entry : unknownStringMap.entrySet()) {
+                ByteBufUtil.writeString(buf, entry.getKey());
+                ByteBufUtil.writeString(buf, entry.getValue());
             }
 
             buf.writeShortLE(variantList.size());
@@ -226,7 +214,7 @@ public class CompiledMaterialDefinition {
     public static class Variant {
         private boolean unknownBool0;
         private List<FlagMode> flagModeList;
-        private List<ShaderCode> shaderCodeList;
+        private Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
 
         public Variant() {
         }
@@ -243,79 +231,59 @@ public class CompiledMaterialDefinition {
                 flagModeList.add(flagMode);
             }
 
-            shaderCodeList = new ArrayList<>(shaderCodeCount);
+            shaderCodeMap = new LinkedHashMap<>(shaderCodeCount);
             for (int i = 0; i < shaderCodeCount; ++i) {
+                PlatformShaderStage platformShaderStage = new PlatformShaderStage();
+                platformShaderStage.readFrom(buf);
                 ShaderCode shaderCode = new ShaderCode();
                 shaderCode.readFrom(buf);
-                shaderCodeList.add(shaderCode);
+                shaderCodeMap.put(platformShaderStage, shaderCode);
             }
         }
 
         public void writeTo(ByteBuf buf) {
             buf.writeBoolean(unknownBool0);
             buf.writeShortLE(flagModeList.size());
-            buf.writeShortLE(shaderCodeList.size());
+            buf.writeShortLE(shaderCodeMap.size());
             for (FlagMode flagMode : flagModeList) {
                 flagMode.writeTo(buf);
             }
-            for (ShaderCode shaderCode : shaderCodeList) {
-                shaderCode.writeTo(buf);
+            for (Map.Entry<PlatformShaderStage, ShaderCode> entry : shaderCodeMap.entrySet()) {
+                entry.getKey().writeTo(buf);
+                entry.getValue().writeTo(buf);
             }
         }
     }
 
     public static class ShaderCode {
-        private String type;
-        private String platform;
-        private byte unknownByte0; //Vertex 0   Fragment 1   Unknown 3
-        private byte unknownByte1;
-        private List<ShaderInput> shaderInputList;
-
-        private byte[] unknownBytes0;
-        private BgfxShader bgfxShader;
+        private Map<String, ShaderInput> shaderInputMap;
+        private long unknownLong0;
+        private byte[] bgfxShader;
 
         public ShaderCode() {
         }
 
         public void readFrom(ByteBuf buf) {
-            type = ByteBufUtil.readString(buf);
-            platform = ByteBufUtil.readString(buf);
-            unknownByte0 = buf.readByte();
-            unknownByte1 = buf.readByte();
-
             short shaderInputCount = buf.readShortLE();
-            shaderInputList = new ArrayList<>(shaderInputCount);
+            shaderInputMap = new LinkedHashMap<>(shaderInputCount);
             for (int i = 0; i < shaderInputCount; ++i) {
+                String name = ByteBufUtil.readString(buf);
                 ShaderInput shaderInput = new ShaderInput();
                 shaderInput.readFrom(buf);
-                shaderInputList.add(shaderInput);
+                shaderInputMap.put(name, shaderInput);
             }
-
-            unknownBytes0 = ByteBufUtil.readBytes(buf, 8);
-
-            int length = buf.readIntLE();
-            ByteBuf byteBuf = buf.readBytes(length);
-
-            bgfxShader = BgfxShader.create(platform);
-            bgfxShader.readFrom(byteBuf);
+            unknownLong0 = buf.readLong();
+            bgfxShader = ByteBufUtil.readByteArray(buf);
         }
 
         public void writeTo(ByteBuf buf) {
-            ByteBufUtil.writeString(buf, type);
-            ByteBufUtil.writeString(buf, platform);
-            buf.writeByte(unknownByte0);
-            buf.writeByte(unknownByte1);
-            buf.writeShortLE(shaderInputList.size());
-            for (ShaderInput shaderInput : shaderInputList) {
-                shaderInput.writeTo(buf);
+            buf.writeShortLE(shaderInputMap.size());
+            for (Map.Entry<String, ShaderInput> entry : shaderInputMap.entrySet()) {
+                ByteBufUtil.writeString(buf, entry.getKey());
+                entry.getValue().writeTo(buf);
             }
-            buf.writeBytes(unknownBytes0);
-
-            ByteBuf byteBuf = Unpooled.buffer();
-            bgfxShader.writeTo(byteBuf);
-
-            buf.writeIntLE(byteBuf.readableBytes());
-            buf.writeBytes(byteBuf);
+            buf.writeLong(unknownLong0);
+            ByteBufUtil.writeByteArray(buf, bgfxShader);
         }
     }
 }
