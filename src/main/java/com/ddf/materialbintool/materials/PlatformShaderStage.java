@@ -7,10 +7,10 @@ import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 
 public class PlatformShaderStage implements IData {
-    private String type;
-    private String platform;
-    private byte typeId; //Vertex 0  Fragment 1  Compute 2(?)  Unknown 3
-    private byte platformId;
+    public String type;
+    public String platform;
+    public byte typeId; //Vertex 0  Fragment 1  Compute 2(?)  Unknown 3
+    public byte platformId;
 
     public void read(ByteBuf buf) {
         type = ByteBufUtil.readString(buf);

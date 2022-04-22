@@ -23,7 +23,7 @@ public class CompiledMaterialDefinition {
 
     private Map<String, SamplerDefinition> samplerDefinitionMap;
     private Map<String, PropertyField> propertyFieldMap;
-    private Map<String, Pass> passMap;
+    private transient Map<String, Pass> passMap;
 
     public void loadFrom(ByteBuf buf) {
         long magic = buf.readLongLE();
@@ -259,7 +259,7 @@ public class CompiledMaterialDefinition {
     public static class ShaderCode implements IData {
         private Map<String, ShaderInput> shaderInputMap;
         private long unknownLong0;
-        private transient byte[] bgfxShader;
+        private transient byte[] bgfxShaderData;
 
         public ShaderCode() {
         }
@@ -274,7 +274,7 @@ public class CompiledMaterialDefinition {
                 shaderInputMap.put(name, shaderInput);
             }
             unknownLong0 = buf.readLong();
-            bgfxShader = ByteBufUtil.readByteArray(buf);
+            bgfxShaderData = ByteBufUtil.readByteArray(buf);
         }
 
         public void write(ByteBuf buf) {
@@ -284,7 +284,7 @@ public class CompiledMaterialDefinition {
                 entry.getValue().write(buf);
             }
             buf.writeLong(unknownLong0);
-            ByteBufUtil.writeByteArray(buf, bgfxShader);
+            ByteBufUtil.writeByteArray(buf, bgfxShaderData);
         }
     }
 }
