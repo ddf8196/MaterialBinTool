@@ -1,65 +1,125 @@
 package com.ddf.materialbintool;
 
+import com.ddf.materialbintool.bgfx.BgfxShader;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
-import com.ddf.materialbintool.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.materials.PlatformShaderStage;
+import com.ddf.materialbintool.util.FileUtil;
+import com.google.gson.*;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
 import java.io.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Main {
-	public static Path outputDir;
-	public static Path currentDir;
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) throws IOException {
-    	if (args.length <= 0)
-    		return;
-		Path inputPath = Paths.get(args[0]);
-		outputDir = inputPath.resolve("unpack");
-		if (!Files.exists(outputDir))
-			Files.createDirectories(outputDir);
-
-		Files.list(inputPath)
-				.filter(path -> Files.isRegularFile(path) && path.toString().endsWith(".material.bin"))
-				.forEach(path -> {
-					String fileName = path.getFileName().toString();
-					currentDir = outputDir.resolve(fileName.substring(0, fileName.indexOf(".material.bin")));
-					try {
-						if (!Files.exists(currentDir))
-							Files.createDirectories(currentDir);
-						byte[] bytes = Files.readAllBytes(path);
-						ByteBuf buf = ByteBufUtil.wrappedBuffer(bytes);
-
-						CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
-						cmd.loadFrom(buf);
-
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				});
     }
 
-	public static void saveFile(String name, String data) {
-    	saveFile(name, data.getBytes(StandardCharsets.UTF_8));
+	public static void saveCompiledMaterialDefinition(CompiledMaterialDefinition cmd, String name, File outputDir) {
+    	if (!outputDir.exists() && !outputDir.mkdirs())
+    		return;
+
+		JsonObject jsonObject = GSON.toJsonTree(cmd).getAsJsonObject();
+		JsonArray passes = new JsonArray();
+		for (Map.Entry<String, CompiledMaterialDefinition.Pass> entry : cmd.passMap.entrySet()) {
+			String passName = entry.getKey();
+			savePass(entry.getValue(), passName, new File(outputDir, passName));
+			passes.add(passName);
+		}
+		jsonObject.add("passes", passes);
+
+		FileUtil.writeString(new File(outputDir, name + ".json"), GSON.toJson(jsonObject));
 	}
 
-	public static void saveFile(String name, byte[] data) {
-    	Path path = currentDir.resolve(name);
-		try {
-			Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-		} catch (IOException e) {
-			e.printStackTrace();
+	private static void savePass(CompiledMaterialDefinition.Pass pass, String passName, File outputDir) {
+		if (!outputDir.exists() && !outputDir.mkdirs())
+			return;
+
+		JsonObject jsonObject = GSON.toJsonTree(pass).getAsJsonObject();
+		JsonArray variantList = jsonObject.get("variantList").getAsJsonArray();
+		for (int i = 0; i < pass.variantList.size(); ++i) {
+			CompiledMaterialDefinition.Variant variant = pass.variantList.get(i);
+			JsonArray shaderCodes = new JsonArray();
+			for (Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode> entry : variant.shaderCodeMap.entrySet()) {
+				PlatformShaderStage platformShaderStage = entry.getKey();
+				CompiledMaterialDefinition.ShaderCode shaderCode = entry.getValue();
+
+				JsonObject entryJson = new JsonObject();
+				entryJson.add("platformShaderStage", GSON.toJsonTree(platformShaderStage));
+
+				JsonObject shaderCodeJson = GSON.toJsonTree(shaderCode).getAsJsonObject();
+				BgfxShader bgfxShader = BgfxShader.create(platformShaderStage.platform);
+				bgfxShader.read(shaderCode.bgfxShaderData);
+
+				String fileName = i + "." + toFileName(platformShaderStage);
+				FileUtil.write(new File(outputDir, fileName), bgfxShader.getCode());
+
+				JsonObject bgfxShaderJson = GSON.toJsonTree(bgfxShader).getAsJsonObject();
+				bgfxShaderJson.addProperty("codeFile", fileName);
+
+				shaderCodeJson.add("bgfxShaderData", bgfxShaderJson);
+
+				entryJson.add("shaderCode", shaderCodeJson);
+
+				shaderCodes.add(entryJson);
+			}
+			variantList.get(i).getAsJsonObject().add("shaderCodes", shaderCodes);
 		}
+
+		FileUtil.writeString(new File(outputDir, passName + ".json"), GSON.toJson(jsonObject));
 	}
 
-	public static Writer openFile(String name) {
-		Path path = currentDir.resolve(name);
-		try {
-			return new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING), StandardCharsets.UTF_8));
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
+	public static CompiledMaterialDefinition loadCompiledMaterialDefinition(File jsonFile) {
+    	File inputDir = jsonFile.getParentFile();
+    	JsonElement jsonElement = JsonParser.parseString(FileUtil.readString(jsonFile));
+    	CompiledMaterialDefinition cmd = GSON.fromJson(jsonElement, CompiledMaterialDefinition.class);
+    	cmd.passMap = new LinkedHashMap<>();
+
+    	JsonArray passes = jsonElement.getAsJsonObject().get("passes").getAsJsonArray();
+    	for (int i = 0; i < passes.size(); ++i) {
+    		String passName = passes.get(i).getAsString();
+    		cmd.passMap.put(passName, loadPass(new File(inputDir, passName + File.separator + passName + ".json")));
 		}
+		return cmd;
+	}
+
+	private static CompiledMaterialDefinition.Pass loadPass(File jsonFile) {
+		File inputDir = jsonFile.getParentFile();
+		JsonElement jsonElement = JsonParser.parseString(FileUtil.readString(jsonFile));
+		CompiledMaterialDefinition.Pass pass = GSON.fromJson(jsonElement, CompiledMaterialDefinition.Pass.class);
+
+		JsonArray variantList = jsonElement.getAsJsonObject().get("variantList").getAsJsonArray();
+		for (int i = 0; i < pass.variantList.size(); ++i) {
+			CompiledMaterialDefinition.Variant variant = pass.variantList.get(i);
+			variant.shaderCodeMap = new LinkedHashMap<>();
+
+			JsonArray shaderCodes = variantList.get(i).getAsJsonObject().get("shaderCodes").getAsJsonArray();
+			for (int j = 0; j < shaderCodes.size(); ++j) {
+				JsonObject entryJson = shaderCodes.get(j).getAsJsonObject();
+
+				PlatformShaderStage platformShaderStage = GSON.fromJson(entryJson.get("platformShaderStage"), PlatformShaderStage.class);
+				CompiledMaterialDefinition.ShaderCode shaderCode = GSON.fromJson(entryJson.get("shaderCode"), CompiledMaterialDefinition.ShaderCode.class);
+
+				JsonObject bgfxShaderData = entryJson.get("shaderCode").getAsJsonObject().get("bgfxShaderData").getAsJsonObject();
+				BgfxShader bgfxShader = GSON.fromJson(bgfxShaderData, BgfxShader.getClass(platformShaderStage.platform));
+				bgfxShader.setCode(FileUtil.readAllBytes(new File(inputDir, bgfxShaderData.get("codeFile").getAsString())));
+
+				shaderCode.bgfxShaderData = bgfxShader.toByteArray();
+
+				variant.shaderCodeMap.put(platformShaderStage, shaderCode);
+			}
+		}
+
+		return pass;
+	}
+
+	private static String toFileName(PlatformShaderStage platformShaderStage) {
+		String fileName = platformShaderStage.platform + "." + platformShaderStage.type;
+		if (platformShaderStage.platform.startsWith("Direct3D"))
+			fileName += ".dxbc";
+		else if (platformShaderStage.platform.startsWith("GLSL") || platformShaderStage.platform.startsWith("ESSL"))
+			fileName += ".glsl";
+		return fileName;
 	}
 }

@@ -23,7 +23,7 @@ public class CompiledMaterialDefinition {
 
     private Map<String, SamplerDefinition> samplerDefinitionMap;
     private Map<String, PropertyField> propertyFieldMap;
-    private transient Map<String, Pass> passMap;
+    public transient Map<String, Pass> passMap;
 
     public void loadFrom(ByteBuf buf) {
         long magic = buf.readLongLE();
@@ -148,7 +148,7 @@ public class CompiledMaterialDefinition {
         private BlendMode blendMode;
 
         private Map<String, String> unknownStringMap;
-        private List<Variant> variantList;
+        public List<Variant> variantList;
 
         public Pass() {
         }
@@ -215,7 +215,7 @@ public class CompiledMaterialDefinition {
     public static class Variant implements IData {
         private boolean unknownBool0;
         private List<FlagMode> flagModeList;
-        private Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
+        public transient Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
 
         public Variant() {
         }
@@ -259,7 +259,7 @@ public class CompiledMaterialDefinition {
     public static class ShaderCode implements IData {
         private Map<String, ShaderInput> shaderInputMap;
         private long unknownLong0;
-        private transient byte[] bgfxShaderData;
+        public transient byte[] bgfxShaderData;
 
         public ShaderCode() {
         }
