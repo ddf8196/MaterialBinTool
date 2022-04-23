@@ -1,19 +1,63 @@
 package com.ddf.materialbintool;
 
+import com.beust.jcommander.JCommander;
 import com.ddf.materialbintool.bgfx.BgfxShader;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
+import com.ddf.materialbintool.materials.definition.FlagMode;
+import com.ddf.materialbintool.util.ByteBufUtil;
 import com.ddf.materialbintool.util.FileUtil;
 import com.google.gson.*;
+import io.netty.buffer.ByteBuf;
 
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class Main {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	private static boolean addFlagModesToCode = false;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+    	Args args1 = new Args();
+		JCommander.newBuilder()
+				.addObject(args1)
+				.build()
+				.parse(args);
+
+		addFlagModesToCode = args1.addFlagModesToCode;
+
+		File inputFile = new File(args1.inputPath);
+		if (!inputFile.exists())
+			return;
+
+		String fileName = inputFile.getName();
+		if (inputFile.isDirectory()) {
+			File jsonFile = new File(inputFile, fileName + ".json");
+			if (!jsonFile.exists())
+				return;
+
+			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile);
+			ByteBuf buf = ByteBufUtil.buffer();
+			cmd.saveTo(buf);
+			FileUtil.write(new File(inputFile, fileName + ".material.bin"), ByteBufUtil.toByteArray(buf));
+		} else {
+			if (fileName.endsWith(".json")) {
+				CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(inputFile);
+				ByteBuf buf = ByteBufUtil.buffer();
+				cmd.saveTo(buf);
+
+				String name = fileName.substring(0, fileName.indexOf(".json")) + ".material.bin";
+				FileUtil.write(new File(inputFile.getParentFile(), name), ByteBufUtil.toByteArray(buf));
+			} else if (fileName.endsWith(".material.bin")) {
+				ByteBuf buf = ByteBufUtil.wrappedBuffer(FileUtil.readAllBytes(inputFile));
+				CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
+				cmd.loadFrom(buf);
+
+				String name = fileName.substring(0, fileName.indexOf(".material.bin"));
+				saveCompiledMaterialDefinition(cmd, name, new File(inputFile.getParentFile(), name));
+			}
+		}
     }
 
 	public static void saveCompiledMaterialDefinition(CompiledMaterialDefinition cmd, String name, File outputDir) {
@@ -53,7 +97,21 @@ public class Main {
 				bgfxShader.read(shaderCode.bgfxShaderData);
 
 				String fileName = i + "." + toFileName(platformShaderStage);
-				FileUtil.write(new File(outputDir, fileName), bgfxShader.getCode());
+				byte[] code = bgfxShader.getCode();
+				if (addFlagModesToCode && (platformShaderStage.platform.startsWith("GLSL") || platformShaderStage.platform.startsWith("ESSL"))) {
+					StringBuilder sb = new StringBuilder();
+					List<FlagMode> flagModeList = new ArrayList<>(variant.flagModeList);
+					flagModeList.sort(Comparator.comparing(FlagMode::getKey));
+					for (FlagMode flagMode : flagModeList) {
+						sb.append("//");
+						sb.append(flagMode.getKey()).append("=").append(flagMode.getValue());
+						sb.append("\n");
+					}
+					sb.append("\n");
+					sb.append(new String(code, StandardCharsets.UTF_8));
+					code = sb.toString().getBytes(StandardCharsets.UTF_8);
+				}
+				FileUtil.write(new File(outputDir, fileName), code);
 
 				JsonObject bgfxShaderJson = GSON.toJsonTree(bgfxShader).getAsJsonObject();
 				bgfxShaderJson.addProperty("codeFile", fileName);

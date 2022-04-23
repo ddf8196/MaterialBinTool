@@ -213,8 +213,8 @@ public class CompiledMaterialDefinition {
     }
 
     public static class Variant implements IData {
-        private boolean unknownBool0;
-        private List<FlagMode> flagModeList;
+        public boolean unknownBool0;
+        public List<FlagMode> flagModeList;
         public transient Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
 
         public Variant() {

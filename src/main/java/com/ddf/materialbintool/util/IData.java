@@ -13,8 +13,6 @@ public interface IData {
     default byte[] toByteArray() {
         ByteBuf buf = ByteBufUtil.buffer();
         write(buf);
-        byte[] array = new byte[buf.readableBytes()];
-        buf.readBytes(array);
-        return array;
+        return ByteBufUtil.toByteArray(buf);
     }
 }

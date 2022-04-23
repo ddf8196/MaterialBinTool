@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.ddf.materialbintool'
-version '0.2.0'
+version '0.3.0'
 
 repositories {
     maven {
@@ -21,6 +21,7 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
     implementation 'io.netty:netty-buffer:4.1.68.Final'
     implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.beust:jcommander:1.82'
 }
 
 shadowJar {

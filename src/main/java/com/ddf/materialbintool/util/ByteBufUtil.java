@@ -54,4 +54,10 @@ public class ByteBufUtil {
     public static void writeString(ByteBuf buffer, String string) {
         writeByteArray(buffer, string.getBytes(StandardCharsets.UTF_8));
     }
+
+    public static byte[] toByteArray(ByteBuf buffer) {
+        byte[] array = new byte[buffer.readableBytes()];
+        buffer.readBytes(array);
+        return array;
+    }
 }
