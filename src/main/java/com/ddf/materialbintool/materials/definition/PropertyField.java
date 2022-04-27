@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf;
 
 
 public class PropertyField implements IData {
-    private int unknownInt0;
+    private int num;
     private short type;
     private boolean hasData;
     private float[] vectorData;
@@ -19,7 +19,7 @@ public class PropertyField implements IData {
         type = buf.readShortLE();
         switch (type) {
             case 2: { //Vec4
-                unknownInt0 = buf.readIntLE();
+                num = buf.readIntLE();
                 hasData = buf.readBoolean();
                 if (hasData) {
                     vectorData = new float[] {
@@ -32,7 +32,7 @@ public class PropertyField implements IData {
                 break;
             }
             case 3: { //Mat3
-                unknownInt0 = buf.readIntLE();
+                num = buf.readIntLE();
                 hasData = buf.readBoolean();
                 if (hasData) {
                     matrixData = ByteBufUtil.readBytes(buf, 36);
@@ -40,7 +40,7 @@ public class PropertyField implements IData {
                 break;
             }
             case 4: { //Mat4
-                unknownInt0 = buf.readIntLE();
+                num = buf.readIntLE();
                 hasData = buf.readBoolean();
                 if (hasData) {
                     matrixData = ByteBufUtil.readBytes(buf, 64);
@@ -57,7 +57,7 @@ public class PropertyField implements IData {
         buf.writeShortLE(type);
         switch (type) {
             case 2: { //Vec4
-                buf.writeIntLE(unknownInt0);
+                buf.writeIntLE(num);
                 buf.writeBoolean(hasData);
                 if (hasData) {
                     for (float f : vectorData) {
@@ -68,7 +68,7 @@ public class PropertyField implements IData {
             }
             case 3:   //Mat3
             case 4: { //Mat4
-                buf.writeIntLE(unknownInt0);
+                buf.writeIntLE(num);
                 buf.writeBoolean(hasData);
                 if (hasData) {
                     ByteBufUtil.writeByteArray(buf, matrixData);

@@ -5,12 +5,12 @@ import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
 public class SamplerDefinition implements IData {
-    public byte unknownByte0;
+    public byte index;
     public byte unknownByte1;
     public byte unknownByte2;
     public boolean unknownBool0;
     public byte unknownByte3;
-    public String unknownStr0; //rgba16f / rgba8 / rg16f / r32ui
+    public String textureFormat; //空字符串 / rgba16f / rgba8 / rg16f / r32ui
 
     public boolean hasUnknownInt;
     public int unknownInt;
@@ -25,12 +25,12 @@ public class SamplerDefinition implements IData {
     }
 
     public void read(ByteBuf buf) {
-        unknownByte0 = buf.readByte();
+        index = buf.readByte();
         unknownByte1 = buf.readByte();
         unknownByte2 = buf.readByte();
         unknownBool0 = buf.readBoolean();
         unknownByte3 = buf.readByte();
-        unknownStr0 = ByteBufUtil.readString(buf);
+        textureFormat = ByteBufUtil.readString(buf);
 
         int unkInt = buf.readIntLE();
         if (unkInt == 1) {
@@ -55,12 +55,12 @@ public class SamplerDefinition implements IData {
     }
 
     public void write(ByteBuf buf) {
-        buf.writeByte(unknownByte0);
+        buf.writeByte(index);
         buf.writeByte(unknownByte1);
         buf.writeByte(unknownByte2);
         buf.writeBoolean(unknownBool0);
         buf.writeByte(unknownByte3);
-        ByteBufUtil.writeString(buf, unknownStr0);
+        ByteBufUtil.writeString(buf, textureFormat);
 
         if (hasUnknownInt) {
             buf.writeIntLE(unknownInt);

@@ -51,8 +51,9 @@ public class CompiledMaterialDefinition {
                     e.printStackTrace();
                 }
                 byte[] key = ByteBufUtil.readByteArray(buf);
-                if (!Arrays.equals(key, digest))
-                    return;
+                if (!Arrays.equals(key, digest)) {
+                    //???
+                }
                 byte[] iv = ByteBufUtil.readByteArray(buf);
                 byte[] encrypted = ByteBufUtil.readByteArray(buf);
 				ByteBuf decrypted = ByteBufUtil.wrappedBuffer(Util.decrypt(key, iv, encrypted));
@@ -60,6 +61,9 @@ public class CompiledMaterialDefinition {
 				break;
             }
             case KeyPair: {
+                byte[] data = ByteBufUtil.readByteArray(buf);
+                byte[] iv = ByteBufUtil.readByteArray(buf);
+                byte[] encrypted = ByteBufUtil.readByteArray(buf);
                 break;
             }
             default: {
@@ -74,7 +78,7 @@ public class CompiledMaterialDefinition {
         if (hasName2)
             name2 = ByteBufUtil.readString(buf);
 
-        int samplerDefinitionCount = buf.readByte();
+        int samplerDefinitionCount = buf.readUnsignedByte();
         samplerDefinitionMap = new LinkedHashMap<>(samplerDefinitionCount);
         for (int i = 0; i < samplerDefinitionCount; i++) {
             String name = ByteBufUtil.readString(buf);
@@ -142,7 +146,7 @@ public class CompiledMaterialDefinition {
         private boolean hasBitSet = false;
         private String bitSet; //111111111111111 / 011111010111110 / 000000100000000
         private byte unknownByte0;
-        private String unknownString0;  //空字符串 / Fallback / DoCheckerboarding
+        private String fallback;  //空字符串 / Fallback / DoCheckerboarding
 
         private boolean hasBlendMode;
         private BlendMode blendMode;
@@ -162,7 +166,7 @@ public class CompiledMaterialDefinition {
             } else {
                 unknownByte0 = buf.readByte();
             }
-            unknownString0 = ByteBufUtil.readString(buf);
+            fallback = ByteBufUtil.readString(buf);
 
             hasBlendMode = buf.readBoolean();
             if (hasBlendMode) {
@@ -192,7 +196,7 @@ public class CompiledMaterialDefinition {
             } else {
                 buf.writeByte(unknownByte0);
             }
-            ByteBufUtil.writeString(buf, unknownString0);
+            ByteBufUtil.writeString(buf, fallback);
 
             buf.writeBoolean(hasBlendMode);
             if (hasBlendMode) {
