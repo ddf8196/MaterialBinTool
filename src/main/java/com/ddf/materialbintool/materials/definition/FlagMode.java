@@ -1,10 +1,9 @@
 package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
-import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
-public class FlagMode implements IData {
+public class FlagMode {
     private String key;
     private String value;
 

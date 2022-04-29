@@ -1,9 +1,8 @@
 package com.ddf.materialbintool.materials.definition;
 
-import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
-public class ShaderInput implements IData {
+public class ShaderInput {
     public Type type;
     public Attribute attribute;
     public boolean isInstanceData;

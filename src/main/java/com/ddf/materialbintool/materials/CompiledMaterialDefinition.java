@@ -2,7 +2,6 @@ package com.ddf.materialbintool.materials;
 
 import com.ddf.materialbintool.materials.definition.*;
 import com.ddf.materialbintool.util.ByteBufUtil;
-import com.ddf.materialbintool.util.IData;
 import com.ddf.materialbintool.util.Util;
 import io.netty.buffer.ByteBuf;
 
@@ -130,7 +129,7 @@ public class CompiledMaterialDefinition {
         buf.writeShortLE(propertyFieldMap.size());
         for (Map.Entry<String, PropertyField> entry : propertyFieldMap.entrySet()) {
             ByteBufUtil.writeString(buf, entry.getKey());
-            entry.getValue().write(buf);
+            entry.getValue().write(buf, entry.getKey());
         }
 
         buf.writeShortLE(passMap.size());
@@ -142,7 +141,7 @@ public class CompiledMaterialDefinition {
         buf.writeLongLE(MAGIC);
     }
 
-    public static class Pass implements IData {
+    public static class Pass {
         private boolean hasBitSet = false;
         private String bitSet; //111111111111111 / 011111010111110 / 000000100000000
         private byte unknownByte0;
@@ -216,7 +215,7 @@ public class CompiledMaterialDefinition {
         }
     }
 
-    public static class Variant implements IData {
+    public static class Variant {
         public boolean unknownBool0;
         public List<FlagMode> flagModeList;
         public transient Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
@@ -260,7 +259,7 @@ public class CompiledMaterialDefinition {
         }
     }
 
-    public static class ShaderCode implements IData {
+    public static class ShaderCode {
         private Map<String, ShaderInput> shaderInputMap;
         private long unknownLong0;
         public transient byte[] bgfxShaderData;

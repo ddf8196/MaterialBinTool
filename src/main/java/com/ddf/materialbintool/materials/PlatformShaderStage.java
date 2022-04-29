@@ -1,12 +1,11 @@
 package com.ddf.materialbintool.materials;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
-import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
 import java.util.Objects;
 
-public class PlatformShaderStage implements IData {
+public class PlatformShaderStage {
     public String type;
     public String platform;
     public byte typeId; //Vertex 0  Fragment 1  Compute 2(?)  Unknown 3

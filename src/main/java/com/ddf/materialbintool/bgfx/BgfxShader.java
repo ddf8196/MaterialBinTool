@@ -1,13 +1,12 @@
 package com.ddf.materialbintool.bgfx;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
-import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BgfxShader implements IData {
+public abstract class BgfxShader {
     private int magic;
     private int hash;
     private List<Uniform> uniforms;
@@ -31,7 +30,6 @@ public abstract class BgfxShader implements IData {
         throw new RuntimeException("Unsupported platform: " + platform);
     }
 
-    @Override
     public void read(ByteBuf buf) {
         magic = buf.readInt();
         hash = buf.readIntLE();
@@ -48,7 +46,6 @@ public abstract class BgfxShader implements IData {
         buf.readByte(); //0
     }
 
-    @Override
     public void write(ByteBuf buf) {
         buf.writeInt(magic);
         buf.writeIntLE(hash);
@@ -60,6 +57,16 @@ public abstract class BgfxShader implements IData {
 
         ByteBufUtil.writeByteArray(buf, code);
         buf.writeByte(0);
+    }
+
+    public void read(byte[] array) {
+        read(ByteBufUtil.wrappedBuffer(array));
+    }
+
+    public byte[] toByteArray() {
+        ByteBuf buf = ByteBufUtil.buffer();
+        write(buf);
+        return ByteBufUtil.toByteArray(buf);
     }
 
     public int getMagic() {

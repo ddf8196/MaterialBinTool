@@ -1,10 +1,9 @@
 package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
-import com.ddf.materialbintool.util.IData;
 import io.netty.buffer.ByteBuf;
 
-public class SamplerDefinition implements IData {
+public class SamplerDefinition {
     public byte index;
     public byte unknownByte1;
     public byte unknownByte2;
