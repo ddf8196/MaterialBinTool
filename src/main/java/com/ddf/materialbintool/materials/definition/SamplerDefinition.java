@@ -4,7 +4,7 @@ import com.ddf.materialbintool.util.ByteBufUtil;
 import io.netty.buffer.ByteBuf;
 
 public class SamplerDefinition {
-    public byte index;
+    public byte reg;
     public byte unknownByte1;
     public byte unknownByte2;
     public boolean unknownBool0;
@@ -24,7 +24,7 @@ public class SamplerDefinition {
     }
 
     public void read(ByteBuf buf) {
-        index = buf.readByte();
+        reg = buf.readByte();
         unknownByte1 = buf.readByte();
         unknownByte2 = buf.readByte();
         unknownBool0 = buf.readBoolean();
@@ -54,7 +54,7 @@ public class SamplerDefinition {
     }
 
     public void write(ByteBuf buf) {
-        buf.writeByte(index);
+        buf.writeByte(reg);
         buf.writeByte(unknownByte1);
         buf.writeByte(unknownByte2);
         buf.writeBoolean(unknownBool0);

@@ -31,10 +31,10 @@ public class CompiledMaterialDefinition {
 		if (!COMPILED_MATERIAL_DEFINITION.equals(ByteBufUtil.readString(buf)))
 			return;
         version = buf.readLongLE();
-        if (version >= 0x16)
-            encryptionVariant = EncryptionVariants.getBySignature(buf.readIntLE());
-        else
-            encryptionVariant = EncryptionVariants.None;
+        if (version < 0x16)
+            throw new UnsupportedOperationException("Files with version less than 22 are no longer supported");
+
+        encryptionVariant = EncryptionVariants.getBySignature(buf.readIntLE());
         switch (encryptionVariant) {
             case None: {
 				loadContent(buf);
@@ -111,9 +111,7 @@ public class CompiledMaterialDefinition {
         buf.writeLongLE(MAGIC);
         ByteBufUtil.writeString(buf, COMPILED_MATERIAL_DEFINITION);
         buf.writeLongLE(version);
-
-        if (version >= 0x16)
-            buf.writeIntLE(EncryptionVariants.None.getSignature());
+        buf.writeIntLE(EncryptionVariants.None.getSignature());
 
         ByteBufUtil.writeString(buf, name);
         buf.writeBoolean(hasName2);

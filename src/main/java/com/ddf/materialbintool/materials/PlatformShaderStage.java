@@ -6,23 +6,23 @@ import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 
 public class PlatformShaderStage {
-    public String type;
-    public String platform;
-    public byte typeId; //Vertex 0  Fragment 1  Compute 2(?)  Unknown 3
-    public byte platformId;
+    public String typeName;
+    public String platformName;
+    public ShaderCodeType type;
+    public ShaderCodePlatform platform;
 
     public void read(ByteBuf buf) {
-        type = ByteBufUtil.readString(buf);
-        platform = ByteBufUtil.readString(buf);
-        typeId = buf.readByte();
-        platformId = buf.readByte();
+        typeName = ByteBufUtil.readString(buf);
+        platformName = ByteBufUtil.readString(buf);
+        type = ShaderCodeType.get(buf.readByte());
+        platform = ShaderCodePlatform.get(buf.readByte());
     }
 
     public void write(ByteBuf buf) {
-        ByteBufUtil.writeString(buf, type);
-        ByteBufUtil.writeString(buf, platform);
-        buf.writeByte(typeId);
-        buf.writeByte(platformId);
+        ByteBufUtil.writeString(buf, typeName);
+        ByteBufUtil.writeString(buf, platformName);
+        buf.writeByte(type.ordinal());
+        buf.writeByte(platform.ordinal());
     }
 
     @Override
@@ -30,21 +30,21 @@ public class PlatformShaderStage {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlatformShaderStage that = (PlatformShaderStage) o;
-        return typeId == that.typeId && platformId == that.platformId;
+        return type == that.type && platform == that.platform;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(typeId, platformId);
+        return Objects.hash(type, platform);
     }
 
     @Override
     public String toString() {
         return "PlatformShaderStage{" +
-                "type='" + type + '\'' +
-                ", platform='" + platform + '\'' +
-                ", typeId=" + typeId +
-                ", platformId=" + platformId +
+                "typeName='" + typeName + '\'' +
+                ", platformName='" + platformName + '\'' +
+                ", type=" + type +
+                ", platform=" + platform +
                 '}';
     }
 }

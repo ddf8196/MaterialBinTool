@@ -49,6 +49,17 @@ public class ShaderInput {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ShaderInput{" +
+                "type=" + type +
+                ", attribute=" + attribute +
+                ", isInstanceData=" + isInstanceData +
+                ", precisionConstraint=" + precisionConstraint +
+                ", interpolationConstraint=" + interpolationConstraint +
+                '}';
+    }
+
     public enum Type {
         Float,
         Vec2,
