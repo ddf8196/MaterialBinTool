@@ -3,13 +3,13 @@ RenderDragon .material.bin文件解包/打包/编译工具
 
 ## 使用
 1. 安装Java8或更高版本
-2. 解包: `java -jar MaterialBinTool-0.5.0-all.jar -u material.bin文件路径`   
-3. 打包: `java -jar MaterialBinTool-0.5.0-all.jar -r 解包输出的目录或json文件的路径`
-4. 编译: `java -jar MaterialBinTool-0.5.0-all.jar -c 输入目录或json文件的路径`
+2. 解包: `java -jar MaterialBinTool-0.5.1-all.jar -u material.bin文件路径`   
+3. 打包: `java -jar MaterialBinTool-0.5.1-all.jar -r 解包输出的目录或json文件的路径`
+4. 编译: `java -jar MaterialBinTool-0.5.1-all.jar -c 输入目录或json文件的路径`
 
 ## 命令行参数
 ```
-java -jar MaterialBinTool-0.5.0-all.jar [选项] <输入文件或目录>
+java -jar MaterialBinTool-0.5.1-all.jar [选项] <输入文件或目录>
 所有选项:
   -u, --unpack        解包输入的.material.bin文件或输入目录中的全部.material.bin文件
   -a, --add-flagmodes 将Variant的FlagMode以注释形式添加至输出的着色器文件前(仅ESSL和GLSL平台有效)
@@ -23,12 +23,13 @@ java -jar MaterialBinTool-0.5.0-all.jar [选项] <输入文件或目录>
 ```
 
 ## 编译sc文件
-1. 执行`java -jar MaterialBinTool-0.5.0-all.jar -u material.bin文件路径`解包要编译的.material.bin文件
+目前支持的平台: ESSL(安卓), Direct3D(Win10), Metal(iOS)
+1. 执行`java -jar MaterialBinTool-0.5.1-all.jar -u material.bin文件路径`解包要编译的.material.bin文件
 2. 在解包输出目录中创建src目录
 3. 在src目录中放置着色器源文件,顶点着色器命名为`文件名.vertex.sc`, 片元着色器命名为`文件名.fragment.sc`, varyingDef文件命名为`文件名.varying.def`
 4. (可选)在解包输出目录中创建defines.json并添加宏定义规则
 5. (可选)将shaderc.exe所在的目录添加至PATH环境变量
-6. 执行`java -jar MaterialBinTool-0.5.0-all.jar -c 解包输出目录`开始编译
+6. 执行`java -jar MaterialBinTool-0.5.1-all.jar -c 解包输出目录`开始编译
 
 ## 默认宏定义规则
 编译时会根据Pass名和Variant的FlagMode自动生成一些宏定义, 默认的宏定义添加和命名规则如下:
@@ -61,7 +62,7 @@ defines.json格式如下:
 
 ## 编译示例
 以编译1.18.31的RenderChunk.material.bin为例:
-1. 执行`java -jar MaterialBinTool-0.5.0-all.jar -u RenderChunk.material.bin文件路径`   
+1. 执行`java -jar MaterialBinTool-0.5.1-all.jar -u RenderChunk.material.bin文件路径`   
 执行完后的目录结构应该是这样:
 ```
 RenderChunk/
@@ -109,13 +110,16 @@ RenderChunk/
         RenderChunk.varying.def.sc
     RenderChunk.json
 ```
-4. 执行`java -jar MaterialBinTool-0.5.0-all.jar -s shaderc.exe路径(可选) -i 包含bgfx_shader.sh的目录路径(可选) -c RenderChunk目录路径`开始编译   
+4. 执行`java -jar MaterialBinTool-0.5.1-all.jar -s shaderc.exe路径(可选) -i 包含bgfx_shader.sh的目录路径(可选) -c RenderChunk目录路径`开始编译   
 若已将shaderc.exe所在目录添加至PATH环境变量,则可不指定`-s`参数   
 若已将bgfx_shader.sh复制至src目录,则可不指定`-i`参数
 5. 执行完成后会在`RenderChunk`目录下生成编译出的`RenderChunk.material.bin`,替换安装包里的对应文件即可使用   
    
 注意: 目前编译出的文件仍然不是全平台通用, 解包的是哪个平台的编译完以后的文件就只能在哪个平台上使用
 
+## 关于sc语言
+sc是bgfx的基于GLSL的跨平台着色器语言,可通过`shaderc`编译为各个平台的着色器   
+sc大多数语法GLSL相同, 但也有部分区别, 编写时需要按照bgfx的标准, 具体区别可在bgfx的文档查看: [shader-compiler-shaderc](https://bkaradzic.github.io/bgfx/tools.html#shader-compiler-shaderc)
 
 ## sc源文件获取
 可在[RenderDragonSorceCodeInv](https://github.com/OEOTYAN/RenderDragonSorceCodeInv) 仓库中获取部分已经由[OEOTYAN](https://github.com/OEOTYAN/) 整理好的sc源文件   
