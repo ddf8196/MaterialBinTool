@@ -111,7 +111,7 @@ RenderChunk/
 ```
 4. 执行`java -jar MaterialBinTool-0.5.0-all.jar -s shaderc.exe路径(可选) -i 包含bgfx_shader.sh的目录路径(可选) -c RenderChunk目录路径`开始编译   
 若已将shaderc.exe所在目录添加至PATH环境变量,则可不指定`-s`参数   
-若已将bgfx_shader.sh复制至,则可不指定`-i`参数
+若已将bgfx_shader.sh复制至src目录,则可不指定`-i`参数
 5. 执行完成后会在`RenderChunk`目录下生成编译出的`RenderChunk.material.bin`,替换安装包里的对应文件即可使用   
    
 注意: 目前编译出的文件仍然不是全平台通用, 解包的是哪个平台的编译完以后的文件就只能在哪个平台上使用
