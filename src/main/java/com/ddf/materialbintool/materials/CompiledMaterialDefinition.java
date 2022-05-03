@@ -148,7 +148,7 @@ public class CompiledMaterialDefinition {
         private boolean hasBlendMode;
         private BlendMode blendMode;
 
-        private Map<String, String> unknownStringMap;
+        private Map<String, String> defaultFlagModes;
         public List<Variant> variantList;
 
         public Pass() {
@@ -170,12 +170,12 @@ public class CompiledMaterialDefinition {
                 blendMode = BlendMode.get(buf.readShortLE());
             }
 
-            short unknownCount = buf.readShortLE();
-            unknownStringMap = new LinkedHashMap<>(unknownCount);
-            for (int i = 0; i < unknownCount; ++i) {
+            short defaultFlagModeCount = buf.readShortLE();
+            defaultFlagModes = new LinkedHashMap<>(defaultFlagModeCount);
+            for (int i = 0; i < defaultFlagModeCount; ++i) {
                 String key = ByteBufUtil.readString(buf);
                 String value = ByteBufUtil.readString(buf);
-                unknownStringMap.put(key, value);
+                defaultFlagModes.put(key, value);
             }
 
             short variantCount = buf.readShortLE();
@@ -200,8 +200,8 @@ public class CompiledMaterialDefinition {
                 buf.writeShortLE(blendMode.ordinal());
             }
 
-            buf.writeShortLE(unknownStringMap.size());
-            for (Map.Entry<String, String> entry : unknownStringMap.entrySet()) {
+            buf.writeShortLE(defaultFlagModes.size());
+            for (Map.Entry<String, String> entry : defaultFlagModes.entrySet()) {
                 ByteBufUtil.writeString(buf, entry.getKey());
                 ByteBufUtil.writeString(buf, entry.getValue());
             }
@@ -258,8 +258,8 @@ public class CompiledMaterialDefinition {
     }
 
     public static class ShaderCode {
-        private Map<String, ShaderInput> shaderInputMap;
-        private long unknownLong0;
+        public Map<String, ShaderInput> shaderInputMap;
+        public long unknownLong0;
         public transient byte[] bgfxShaderData;
 
         public ShaderCode() {

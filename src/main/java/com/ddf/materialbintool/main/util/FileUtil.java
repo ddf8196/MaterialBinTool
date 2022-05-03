@@ -1,4 +1,4 @@
-package com.ddf.materialbintool.util;
+package com.ddf.materialbintool.main.util;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -32,5 +32,16 @@ public class FileUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void delete(File file) {
+        if (!file.exists())
+            return;
+        if (file.isDirectory()) {
+            for (File file1 : file.listFiles()) {
+                delete(file1);
+            }
+        }
+        file.delete();
     }
 }
