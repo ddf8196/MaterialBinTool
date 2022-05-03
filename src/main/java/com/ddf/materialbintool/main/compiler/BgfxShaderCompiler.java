@@ -131,11 +131,9 @@ public class BgfxShaderCompiler {
             case Direct3D_SM40:
                 return prefix + "s_4_0";
             case Direct3D_SM50:
-                return prefix + "s_5_0";
             case Direct3D_SM60:
-                return prefix + "s_6_0";
             case Direct3D_SM65:
-                return prefix + "s_6_5";
+                return prefix + "s_5_0";
             default:
                 return "";
         }

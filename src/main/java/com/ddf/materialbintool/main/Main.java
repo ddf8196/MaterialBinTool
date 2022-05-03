@@ -121,7 +121,7 @@ public class Main {
 			}
 			BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
 
-			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, false, args.raw);
+			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
 			for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
 				String passName = passEntry.getKey();
 				System.out.println("Compiling " + passName);
@@ -176,29 +176,7 @@ public class Main {
 								continue;
 						}
 						byte[] compiled = compiler.compile(input, varyingDefFile, defines, platformShaderStage.platform, platformShaderStage.type);
-						if (compiled == null) {
-							iterator.remove();
-							continue;
-						}
-						if (!args.raw) {
-							BgfxShader shader = BgfxShader.create(platformShaderStage.platformName);
-							shader.read(compiled);
-							if (args.addFlagModesToCode && shader instanceof BgfxShaderGL) {
-								StringBuilder sb = new StringBuilder();
-								List<FlagMode> flagModeList = new ArrayList<>(variant.flagModeList);
-								flagModeList.sort(Comparator.comparing(FlagMode::getKey));
-								for (FlagMode flagMode : flagModeList) {
-									sb.append("//");
-									sb.append(flagMode.getKey()).append("=").append(flagMode.getValue());
-									sb.append("\n");
-								}
-								sb.append("\n");
-								sb.append(new String(shader.getCode(), StandardCharsets.UTF_8));
-
-								shader.setCode(sb.toString().getBytes(StandardCharsets.UTF_8));
-							}
-							shaderCode.bgfxShaderData = shader.toByteArray();
-						} else {
+						if (compiled != null) {
 							shaderCode.bgfxShaderData = compiled;
 						}
 					}
