@@ -3,7 +3,6 @@ package com.ddf.materialbintool.main;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.ddf.materialbintool.bgfx.BgfxShader;
-import com.ddf.materialbintool.bgfx.BgfxShaderGL;
 import com.ddf.materialbintool.main.compiler.BgfxShaderCompiler;
 import com.ddf.materialbintool.main.compiler.Defines;
 import com.ddf.materialbintool.main.util.StringUtil;
@@ -120,7 +119,9 @@ public class Main {
 				return;
 			}
 			BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
-
+			if (args.includePath != null) {
+				compiler.addIncludePath(args.includePath);
+			}
 			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
 			for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
 				String passName = passEntry.getKey();
@@ -172,7 +173,6 @@ public class Main {
 								break;
 							default:
 								//???
-								iterator.remove();
 								continue;
 						}
 						byte[] compiled = compiler.compile(input, varyingDefFile, defines, platformShaderStage.platform, platformShaderStage.type);

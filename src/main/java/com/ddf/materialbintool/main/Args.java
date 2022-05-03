@@ -2,6 +2,8 @@ package com.ddf.materialbintool.main;
 
 import com.beust.jcommander.Parameter;
 
+import java.util.List;
+
 public class Args {
     @Parameter(names = {"-h", "--help"}, help = true)
     public boolean help = false;
@@ -23,6 +25,9 @@ public class Args {
 
     @Parameter(names = {"-s", "--shaderc"})
     public String shaderCompilerPath;
+
+    @Parameter(names = {"-i", "--include"})
+    public String includePath;
 
     @Parameter(names = {"-o", "--output"})
     public String outputPath;

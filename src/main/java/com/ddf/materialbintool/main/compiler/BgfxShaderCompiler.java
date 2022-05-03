@@ -12,13 +12,18 @@ import java.util.List;
 import java.util.Random;
 
 public class BgfxShaderCompiler {
-    private Random random = new Random();
-    private String compilerPath;
-    private File tempDir;
+    private final Random random = new Random();
+    private final String compilerPath;
+    private final List<String> includePaths = new ArrayList<>();
+    private final File tempDir;
 
     public BgfxShaderCompiler(String compilerPath) {
         this.compilerPath = compilerPath;
         this.tempDir = createTempDir();
+    }
+
+    public void addIncludePath(String includePath) {
+        includePaths.add(includePath);
     }
 
     public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderCodeType type) {
@@ -54,6 +59,11 @@ public class BgfxShaderCompiler {
         if (platform.name().startsWith("Direct3D")) {
             command.add("--profile");
             command.add(toProfileString(platform, type));
+        }
+
+        for (String includePath : includePaths) {
+            command.add("-i");
+            command.add(includePath);
         }
 
         try {
