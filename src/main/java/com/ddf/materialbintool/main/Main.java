@@ -406,7 +406,7 @@ public class Main {
 						shaderCode.bgfxShaderData = bgfxShader.toByteArray();
 					} else {
 						String path = entryJson.getAsJsonObject("shaderCode").get("bgfxShaderData").getAsString();
-						shaderCode.bgfxShaderData = FileUtil.readAllBytes(new File(path));
+						shaderCode.bgfxShaderData = FileUtil.readAllBytes(new File(inputDir, path));
 					}
 				}
 

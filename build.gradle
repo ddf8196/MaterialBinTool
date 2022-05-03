@@ -26,6 +26,6 @@ dependencies {
 
 shadowJar {
     manifest {
-        attributes 'Main-Class': 'com.ddf.materialbintool.Main'
+        attributes 'Main-Class': 'com.ddf.materialbintool.main.Main'
     }
 }
