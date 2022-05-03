@@ -56,7 +56,7 @@ public class BgfxShaderCompiler {
         command.add("--type");
         command.add(toTypeString(type));
 
-        if (platform.name().startsWith("Direct3D")) {
+        if (platform.name().startsWith("Direct3D") || platform.name().startsWith("Metal")) {
             command.add("--profile");
             command.add(toProfileString(platform, type));
         }
@@ -100,6 +100,8 @@ public class BgfxShaderCompiler {
             case Direct3D_SM60:
             case Direct3D_SM65:
                 return "windows";
+            case Metal:
+                return "osx";
             default:
                 return "";
         }
@@ -144,6 +146,8 @@ public class BgfxShaderCompiler {
             case Direct3D_SM60:
             case Direct3D_SM65:
                 return prefix + "s_5_0";
+            case Metal:
+                return "metal";
             default:
                 return "";
         }

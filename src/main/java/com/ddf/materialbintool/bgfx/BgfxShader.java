@@ -17,6 +17,8 @@ public abstract class BgfxShader {
             return new BgfxShaderD3D();
         if (platform.startsWith("GLSL") || platform.startsWith("ESSL"))
             return new BgfxShaderGL();
+        if (platform.startsWith("Metal"))
+            return new BgfxShaderGL();
 
         throw new RuntimeException("Unsupported platform: " + platform);
     }
@@ -25,6 +27,8 @@ public abstract class BgfxShader {
         if (platform.startsWith("Direct3D"))
             return BgfxShaderD3D.class;
         if (platform.startsWith("GLSL") || platform.startsWith("ESSL"))
+            return BgfxShaderGL.class;
+        if (platform.startsWith("Metal"))
             return BgfxShaderGL.class;
 
         throw new RuntimeException("Unsupported platform: " + platform);

@@ -310,7 +310,7 @@ public class Main {
 
 					String fileName = i + "." + toFileName(platformShaderStage, false);
 					byte[] code = bgfxShader.getCode();
-					if (addFlagModesToCode && (platformShaderStage.platformName.startsWith("GLSL") || platformShaderStage.platformName.startsWith("ESSL"))) {
+					if (addFlagModesToCode && (platformShaderStage.platformName.startsWith("GLSL") || platformShaderStage.platformName.startsWith("ESSL") || platformShaderStage.platformName.startsWith("Metal"))) {
 						StringBuilder sb = new StringBuilder();
 						List<FlagMode> flagModeList = new ArrayList<>(variant.flagModeList);
 						flagModeList.sort(Comparator.comparing(FlagMode::getKey));
@@ -403,6 +403,8 @@ public class Main {
 			fileName += ".dxbc";
 		else if (platformShaderStage.platformName.startsWith("GLSL") || platformShaderStage.platformName.startsWith("ESSL"))
 			fileName += ".glsl";
+		else if (platformShaderStage.platformName.startsWith("Metal"))
+			fileName += ".msl";
 		return fileName;
 	}
 }
