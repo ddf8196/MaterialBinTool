@@ -6,20 +6,15 @@ import com.ddf.materialbintool.materials.ShaderCodeType;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class BgfxShaderCompiler {
-    private final Random random = new Random();
     private final String compilerPath;
     private final List<String> includePaths = new ArrayList<>();
-    private final File tempDir;
 
     public BgfxShaderCompiler(String compilerPath) {
         this.compilerPath = compilerPath;
-        this.tempDir = createTempDir();
     }
 
     public void addIncludePath(String includePath) {
@@ -27,22 +22,13 @@ public class BgfxShaderCompiler {
     }
 
     public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderCodeType type) {
-        File tempOutputFile = new File(tempDir, System.nanoTime() + Integer.toHexString(random.nextInt()));
-        compile(input, varyingDef, tempOutputFile, defines, platform, type);
-        byte[] output = tempOutputFile.exists() ? FileUtil.readAllBytes(tempOutputFile) : null;
-        FileUtil.delete(tempOutputFile);
-        return output;
-    }
-
-    public void compile(File input, File varyingDef, File output, Defines defines, ShaderCodePlatform platform, ShaderCodeType type) {
         List<String> command = new ArrayList<>();
         command.add(compilerPath);
 
+        command.add("--stdout");
+
         command.add("-f");
         command.add(input.getAbsolutePath());
-
-        command.add("-o");
-        command.add(output.getPath());
 
         command.add("--varyingdef");
         command.add(varyingDef.getAbsolutePath());
@@ -56,10 +42,8 @@ public class BgfxShaderCompiler {
         command.add("--type");
         command.add(toTypeString(type));
 
-        if (platform.name().startsWith("Direct3D") || platform.name().startsWith("Metal")) {
-            command.add("--profile");
-            command.add(toProfileString(platform, type));
-        }
+        command.add("--profile");
+        command.add(toProfileString(platform, type));
 
         for (String includePath : includePaths) {
             command.add("-i");
@@ -68,25 +52,23 @@ public class BgfxShaderCompiler {
 
         try {
             Process process = new ProcessBuilder()
-                    .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                    .redirectError(ProcessBuilder.Redirect.INHERIT)
                     .command(command)
                     .start();
-            process.waitFor();
+            int code = process.waitFor();
+            if (code == 0) {
+                return FileUtil.readAllBytes(process.getInputStream());
+            } else {
+                byte[] stdout = FileUtil.readAllBytes(process.getInputStream());
+                byte[] stderr = FileUtil.readAllBytes(process.getErrorStream());
+                if (stdout != null)
+                    System.out.write(stdout);
+                if (stderr != null)
+                    System.err.write(stderr);
+            }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    private static File createTempDir() {
-        try {
-            File dir = Files.createTempDirectory("materialbintool").toFile();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtil.delete(dir)));
-            return dir;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return null;
     }
 
     private static String toPlatformString(ShaderCodePlatform shaderCodePlatform) {
@@ -101,7 +83,7 @@ public class BgfxShaderCompiler {
             case Direct3D_SM65:
                 return "windows";
             case Metal:
-                return "osx";
+                return "ios";
             default:
                 return "";
         }
@@ -146,8 +128,20 @@ public class BgfxShaderCompiler {
             case Direct3D_SM60:
             case Direct3D_SM65:
                 return prefix + "s_5_0";
+            case GLSL_120:
+                return "120";
+            case GLSL_430:
+                return "430";
+            case ESSL_100:
+                return "100_es";
+            case ESSL_300:
+                return "300_es";
+            case ESSL_310:
+                return "310_es";
             case Metal:
                 return "metal";
+            case Vulkan:
+                return "spirv";
             default:
                 return "";
         }

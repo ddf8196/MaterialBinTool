@@ -179,6 +179,9 @@ public class Main {
 						if (compiled != null) {
 							shaderCode.bgfxShaderData = compiled;
 						}
+						if (shaderCode.bgfxShaderData == null) {
+							iterator.remove();
+						}
 					}
 				}
 			}

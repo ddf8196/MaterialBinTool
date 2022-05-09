@@ -11,6 +11,15 @@ public class PlatformShaderStage {
     public ShaderCodeType type;
     public ShaderCodePlatform platform;
 
+    public PlatformShaderStage() {}
+
+    public PlatformShaderStage(ShaderCodeType type, ShaderCodePlatform platform) {
+        this.type = type;
+        this.platform = platform;
+        this.typeName = type.name();
+        this.platformName = platform.name();
+    }
+
     public void read(ByteBuf buf) {
         typeName = ByteBufUtil.readString(buf);
         platformName = ByteBufUtil.readString(buf);

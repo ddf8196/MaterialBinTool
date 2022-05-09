@@ -6,12 +6,20 @@ import java.nio.charset.StandardCharsets;
 public class FileUtil {
     public static byte[] readAllBytes(File file) {
         try {
-            InputStream inputStream = new FileInputStream(file);
+            return readAllBytes(new FileInputStream(file));
+        } catch (IOException e) {
+             return null;
+        }
+    }
+
+    public static byte[] readAllBytes(InputStream inputStream) {
+        try {
             byte[] data = new byte[inputStream.available()];
             inputStream.read(data);
             inputStream.close();
             return data;
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
     }
