@@ -6,15 +6,20 @@ import com.ddf.materialbintool.materials.ShaderCodeType;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class BgfxShaderCompiler {
+    private final Random random = new Random();
     private final String compilerPath;
     private final List<String> includePaths = new ArrayList<>();
+    private final File tempDir;
 
     public BgfxShaderCompiler(String compilerPath) {
         this.compilerPath = compilerPath;
+        this.tempDir = createTempDir();
     }
 
     public void addIncludePath(String includePath) {
@@ -22,13 +27,26 @@ public class BgfxShaderCompiler {
     }
 
     public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderCodeType type) {
+        File tempOutputFile = new File(tempDir, System.nanoTime() + Integer.toHexString(random.nextInt()));
+        int code = compile(input, varyingDef, tempOutputFile, defines, platform, type);
+        if (code == 0) {
+            byte[] output = tempOutputFile.exists() ? FileUtil.readAllBytes(tempOutputFile) : null;
+            FileUtil.delete(tempOutputFile);
+            return output;
+        } else {
+            return null;
+        }
+    }
+
+    public int compile(File input, File varyingDef, File output, Defines defines, ShaderCodePlatform platform, ShaderCodeType type) {
         List<String> command = new ArrayList<>();
         command.add(compilerPath);
 
-        command.add("--stdout");
-
         command.add("-f");
         command.add(input.getAbsolutePath());
+
+        command.add("-o");
+        command.add(output.getPath());
 
         command.add("--varyingdef");
         command.add(varyingDef.getAbsolutePath());
@@ -52,23 +70,26 @@ public class BgfxShaderCompiler {
 
         try {
             Process process = new ProcessBuilder()
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                    .redirectError(ProcessBuilder.Redirect.INHERIT)
                     .command(command)
                     .start();
-            int code = process.waitFor();
-            if (code == 0) {
-                return FileUtil.readAllBytes(process.getInputStream());
-            } else {
-                byte[] stdout = FileUtil.readAllBytes(process.getInputStream());
-                byte[] stderr = FileUtil.readAllBytes(process.getErrorStream());
-                if (stdout != null)
-                    System.out.write(stdout);
-                if (stderr != null)
-                    System.err.write(stderr);
-            }
+            return process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
+            return -1;
         }
-        return null;
+    }
+
+    private static File createTempDir() {
+        try {
+            File dir = Files.createTempDirectory("materialbintool").toFile();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtil.delete(dir)));
+            return dir;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private static String toPlatformString(ShaderCodePlatform shaderCodePlatform) {
@@ -84,6 +105,8 @@ public class BgfxShaderCompiler {
                 return "windows";
             case Metal:
                 return "ios";
+            case Vulkan:
+                return "vulkan";
             default:
                 return "";
         }

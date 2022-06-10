@@ -19,6 +19,8 @@ public abstract class BgfxShader {
             return new BgfxShaderGL();
         if (platform.startsWith("Metal"))
             return new BgfxShaderMtl();
+        if (platform.startsWith("Vulkan"))
+            return new BgfxShaderVK();
 
         throw new RuntimeException("Unsupported platform: " + platform);
     }
@@ -30,6 +32,8 @@ public abstract class BgfxShader {
             return BgfxShaderGL.class;
         if (platform.startsWith("Metal"))
             return BgfxShaderMtl.class;
+        if (platform.startsWith("Vulkan"))
+            return BgfxShaderVK.class;
 
         throw new RuntimeException("Unsupported platform: " + platform);
     }

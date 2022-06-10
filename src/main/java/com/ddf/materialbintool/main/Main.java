@@ -169,11 +169,9 @@ public class Main {
 								input = computeSourceFile;
 								break;
 							case Unknown:
+							default:
 								input = fragmentSourceFile;
 								break;
-							default:
-								//???
-								continue;
 						}
 						byte[] compiled = compiler.compile(input, varyingDefFile, defines, platformShaderStage.platform, platformShaderStage.type);
 						if (compiled != null) {
@@ -408,6 +406,8 @@ public class Main {
 			fileName += ".glsl";
 		else if (platformShaderStage.platformName.startsWith("Metal"))
 			fileName += ".msl";
+		else if (platformShaderStage.platformName.startsWith("Vulkan"))
+			fileName += ".spirv";
 		return fileName;
 	}
 }
