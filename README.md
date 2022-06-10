@@ -124,4 +124,4 @@ sc大多数语法GLSL相同, 但也有部分区别, 编写时需要按照bgfx的
 ## sc源文件获取
 可在[RenderDragonSorceCodeInv](https://github.com/OEOTYAN/RenderDragonSorceCodeInv) 仓库中获取部分已经由[OEOTYAN](https://github.com/OEOTYAN/) 整理好的sc源文件   
 其他源文件(RTX相关的除外)可根据安卓版的.material.bin解包出的glsl自行手动整理    
-`bgfx_shader.sc`可在bgfx仓库获取(渲染龙使用的bgfx版本较老, 不保证最新版仓库里的源码可用, 这里提供一个可用的版本: [bgfx_shader.sc](https://github.com/bkaradzic/bgfx/blob/1ba107d156d1d28e86550df5d586ea259aec1020/src/bgfx_shader.sh))
+`bgfx_shader.sh`可在bgfx仓库获取(渲染龙使用的bgfx版本较老, 不保证最新版仓库里的源码可用, 这里提供一个可用的版本: [bgfx_shader.sh](https://github.com/bkaradzic/bgfx/blob/1ba107d156d1d28e86550df5d586ea259aec1020/src/bgfx_shader.sh))
