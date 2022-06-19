@@ -1,6 +1,7 @@
 package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBufUtil;
+import com.google.gson.annotations.SerializedName;
 import io.netty.buffer.ByteBuf;
 
 public class SamplerDefinition {
@@ -48,8 +49,8 @@ public class SamplerDefinition {
         hasCustomTypeInfo = buf.readBoolean();
         if (hasCustomTypeInfo) {
             customTypeInfo = new CustomTypeInfo();
-            customTypeInfo.unknownStr = ByteBufUtil.readString(buf);
-            customTypeInfo.unknownInt = buf.readIntLE();
+            customTypeInfo.name = ByteBufUtil.readString(buf);
+            customTypeInfo.size = buf.readIntLE();
         }
     }
 
@@ -72,13 +73,16 @@ public class SamplerDefinition {
 
         buf.writeBoolean(hasCustomTypeInfo);
         if (hasCustomTypeInfo) {
-            ByteBufUtil.writeString(buf, customTypeInfo.unknownStr);
-            buf.writeIntLE(customTypeInfo.unknownInt);
+            ByteBufUtil.writeString(buf, customTypeInfo.name);
+            buf.writeIntLE(customTypeInfo.size);
         }
     }
 
     public static class CustomTypeInfo {
-        public String unknownStr;
-        public int unknownInt;
+        @SerializedName(value = "name", alternate = {"unknownStr"})
+        public String name;
+
+        @SerializedName(value = "size", alternate = {"unknownInt"})
+        public int size;
     }
 }
