@@ -1,14 +1,38 @@
 package com.ddf.materialbintool.bgfx;
 
+import com.ddf.materialbintool.util.ByteBufUtil;
 import io.netty.buffer.ByteBuf;
 
+import java.util.ArrayList;
+
 public class BgfxShaderMtl extends BgfxShader {
+    private int[] numThreads;
     private short[] attrs;
     private short size;
 
     @Override
     public void read(ByteBuf buf) {
-        super.read(buf);
+        magic = buf.readInt();
+        hash = buf.readIntLE();
+
+        short count = buf.readShortLE();
+        uniforms = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            Uniform uniform = new Uniform();
+            uniform.readFrom(buf);
+            uniforms.add(uniform);
+        }
+
+        if (magic == 0x43534803) { //Compute Shader
+            numThreads = new int[3];
+            for (int i = 0; i < 3; i++) {
+                numThreads[i] = buf.readShortLE();
+            }
+        }
+
+        code = ByteBufUtil.readByteArray(buf);
+        buf.readByte(); //0
+
         if (buf.isReadable()) {
             int numAttrs = buf.readUnsignedByte();
             attrs = new short[numAttrs];
@@ -29,6 +53,14 @@ public class BgfxShaderMtl extends BgfxShader {
             }
             buf.writeShortLE(size);
         }
+    }
+
+    public int[] getNumThreads() {
+        return numThreads;
+    }
+
+    public void setNumThreads(int[] numThreads) {
+        this.numThreads = numThreads;
     }
 
     public short[] getAttrs() {

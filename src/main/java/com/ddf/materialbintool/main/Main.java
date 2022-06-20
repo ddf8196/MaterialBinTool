@@ -405,7 +405,7 @@ public class Main {
 		else if (platformShaderStage.platformName.startsWith("GLSL") || platformShaderStage.platformName.startsWith("ESSL"))
 			fileName += ".glsl";
 		else if (platformShaderStage.platformName.startsWith("Metal"))
-			fileName += ".msl";
+			fileName += ".metal";
 		else if (platformShaderStage.platformName.startsWith("Vulkan"))
 			fileName += ".spirv";
 		return fileName;

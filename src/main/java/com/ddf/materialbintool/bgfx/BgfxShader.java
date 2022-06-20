@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BgfxShader {
-    private int magic;
-    private int hash;
-    private List<Uniform> uniforms;
-    private transient byte[] code;
+    protected int magic;
+    protected int hash;
+    protected List<Uniform> uniforms;
+    protected transient byte[] code;
 
     public static BgfxShader create(String platform) {
         if (platform.startsWith("Direct3D"))
