@@ -26,8 +26,8 @@ public class Args {
     @Parameter(names = {"-s", "--shaderc"})
     public String shaderCompilerPath;
 
-    @Parameter(names = {"-i", "--include"})
-    public String includePath;
+    @Parameter(names = {"-i", "--include"}, variableArity = true)
+    public List<String> includePath;
 
     @Parameter(names = {"-o", "--output"})
     public String outputPath;

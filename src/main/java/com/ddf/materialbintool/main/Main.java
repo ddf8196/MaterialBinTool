@@ -120,7 +120,9 @@ public class Main {
 			}
 			BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
 			if (args.includePath != null) {
-				compiler.addIncludePath(args.includePath);
+				for (String path : args.includePath) {
+					compiler.addIncludePath(path);
+				}
 			}
 			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
 			for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
