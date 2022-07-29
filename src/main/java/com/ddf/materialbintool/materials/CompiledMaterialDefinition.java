@@ -112,7 +112,10 @@ public class CompiledMaterialDefinition {
         ByteBufUtil.writeString(buf, COMPILED_MATERIAL_DEFINITION);
         buf.writeLongLE(version);
         buf.writeIntLE(EncryptionVariants.None.getSignature());
+        writeContent(buf);
+    }
 
+    private void writeContent(ByteBuf buf) {
         ByteBufUtil.writeString(buf, name);
         buf.writeBoolean(hasName2);
         if (hasName2)

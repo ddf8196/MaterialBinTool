@@ -68,6 +68,8 @@ public class BgfxShaderCompiler {
             command.add(includePath);
         }
 
+        command.add("-O 3");
+
         try {
             Process process = new ProcessBuilder()
                     .redirectOutput(ProcessBuilder.Redirect.INHERIT)
