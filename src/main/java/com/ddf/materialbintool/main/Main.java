@@ -9,6 +9,7 @@ import com.ddf.materialbintool.main.util.StringUtil;
 import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
+import com.ddf.materialbintool.materials.definition.EncryptionVariants;
 import com.ddf.materialbintool.materials.definition.FlagMode;
 import com.ddf.materialbintool.util.ByteBufUtil;
 import com.ddf.materialbintool.main.util.FileUtil;
@@ -78,7 +79,7 @@ public class Main {
 			System.out.println("Repacking " + outputFile.getName());
 			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
 			ByteBuf buf = ByteBufUtil.buffer();
-			cmd.saveTo(buf);
+			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
 			FileUtil.write(outputFile, ByteBufUtil.toByteArray(buf));
 		} else if (args.compile) {
 			File jsonFile = getInputJsonFile(inputFile);
@@ -187,7 +188,7 @@ public class Main {
 			}
 
 			ByteBuf buf = ByteBufUtil.buffer();
-			cmd.saveTo(buf);
+			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
 			FileUtil.write(outputFile, ByteBufUtil.toByteArray(buf));
 		} else {
 			jCommander.usage();

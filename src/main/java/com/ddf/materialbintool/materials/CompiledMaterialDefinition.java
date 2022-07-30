@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 
 public class CompiledMaterialDefinition {
@@ -107,15 +108,44 @@ public class CompiledMaterialDefinition {
         return end == MAGIC;
     }
 
-    public void saveTo(ByteBuf buf) {
+    public void saveTo(ByteBuf buf, EncryptionVariants encryptionVariant) {
         buf.writeLongLE(MAGIC);
         ByteBufUtil.writeString(buf, COMPILED_MATERIAL_DEFINITION);
         buf.writeLongLE(version);
-        buf.writeIntLE(EncryptionVariants.None.getSignature());
-        writeContent(buf);
+        buf.writeIntLE(encryptionVariant.getSignature());
+
+        switch (encryptionVariant) {
+            case None: {
+                saveContent(buf);
+                return;
+            }
+            case SimplePassphrase: {
+                byte[] key = null;
+                try {
+                    MessageDigest md = MessageDigest.getInstance("SHA-256");
+                    String text = "those are not the shaders you are looking for! ";
+                    key = md.digest(Base64.getEncoder().encode(text.getBytes(StandardCharsets.UTF_8)));
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+                ByteBufUtil.writeByteArray(buf, key);
+
+                byte[] iv = new byte[16];
+                new SecureRandom().nextBytes(iv);
+                ByteBufUtil.writeByteArray(buf, iv);
+
+                ByteBuf byteBuf = ByteBufUtil.buffer();
+                saveContent(byteBuf);
+
+                ByteBufUtil.writeByteArray(buf, Util.encrypt(key, iv, ByteBufUtil.toByteArray(byteBuf)));
+                return;
+            }
+            case KeyPair:
+                return;
+        }
     }
 
-    private void writeContent(ByteBuf buf) {
+    private void saveContent(ByteBuf buf) {
         ByteBufUtil.writeString(buf, name);
         buf.writeBoolean(hasName2);
         if (hasName2)
