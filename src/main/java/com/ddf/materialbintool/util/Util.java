@@ -1,9 +1,9 @@
 package com.ddf.materialbintool.util;
 
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.modes.GCMBlockCipher;
-import org.bouncycastle.crypto.params.AEADParameters;
-import org.bouncycastle.crypto.params.KeyParameter;
+import com.ddf.materialbintool.thirdparty.bouncycastle.crypto.engines.AESEngine;
+import com.ddf.materialbintool.thirdparty.bouncycastle.crypto.modes.GCMBlockCipher;
+import com.ddf.materialbintool.thirdparty.bouncycastle.crypto.params.AEADParameters;
+import com.ddf.materialbintool.thirdparty.bouncycastle.crypto.params.KeyParameter;
 
 import java.util.Arrays;
 

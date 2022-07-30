@@ -190,6 +190,10 @@ public class Main {
 			ByteBuf buf = ByteBufUtil.buffer();
 			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
 			FileUtil.write(outputFile, ByteBufUtil.toByteArray(buf));
+		} else if (args.diff) {
+
+		} else if (args.patch) {
+
 		} else {
 			jCommander.usage();
 		}
