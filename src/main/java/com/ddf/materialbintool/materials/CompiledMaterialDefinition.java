@@ -3,6 +3,7 @@ package com.ddf.materialbintool.materials;
 import com.ddf.materialbintool.materials.definition.*;
 import com.ddf.materialbintool.util.ByteBufUtil;
 import com.ddf.materialbintool.util.Util;
+import com.google.gson.annotations.SerializedName;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
@@ -18,8 +19,10 @@ public class CompiledMaterialDefinition {
     private long version;
     private EncryptionVariants encryptionVariant;
     private String name;
-    private boolean hasName2;
-    private String name2;
+    @SerializedName(value = "hasParentName", alternate = {"hasName2"})
+    private boolean hasParentName;
+    @SerializedName(value = "parentName", alternate = {"name2"})
+    private String parentName;
 
     private Map<String, SamplerDefinition> samplerDefinitionMap;
     private Map<String, PropertyField> propertyFieldMap;
@@ -74,9 +77,9 @@ public class CompiledMaterialDefinition {
 
     private boolean loadContent(ByteBuf buf) {
         name = ByteBufUtil.readString(buf);
-        hasName2 = buf.readBoolean();
-        if (hasName2)
-            name2 = ByteBufUtil.readString(buf);
+        hasParentName = buf.readBoolean();
+        if (hasParentName)
+            parentName = ByteBufUtil.readString(buf);
 
         int samplerDefinitionCount = buf.readUnsignedByte();
         samplerDefinitionMap = new LinkedHashMap<>(samplerDefinitionCount);
@@ -147,9 +150,9 @@ public class CompiledMaterialDefinition {
 
     private void saveContent(ByteBuf buf) {
         ByteBufUtil.writeString(buf, name);
-        buf.writeBoolean(hasName2);
-        if (hasName2)
-            ByteBufUtil.writeString(buf, name2);
+        buf.writeBoolean(hasParentName);
+        if (hasParentName)
+            ByteBufUtil.writeString(buf, parentName);
 
         buf.writeByte(samplerDefinitionMap.size());
         for (Map.Entry<String, SamplerDefinition> entry : samplerDefinitionMap.entrySet()) {
@@ -175,7 +178,8 @@ public class CompiledMaterialDefinition {
     public static class Pass {
         private boolean hasBitSet = false;
         private String bitSet; //111111111111111 / 011111010111110 / 000000100000000
-        private byte unknownByte0;
+        @SerializedName(value = "graphicsProfile", alternate = {"unknownByte0"})
+        private byte graphicsProfile;
         private String fallback;  //空字符串 / Fallback / DoCheckerboarding
 
         private boolean hasBlendMode;
@@ -194,7 +198,7 @@ public class CompiledMaterialDefinition {
             if (hasBitSet) {
                 bitSet = ByteBufUtil.readString(buf);
             } else {
-                unknownByte0 = buf.readByte();
+                graphicsProfile = buf.readByte();
             }
             fallback = ByteBufUtil.readString(buf);
 
@@ -224,7 +228,7 @@ public class CompiledMaterialDefinition {
             if (hasBitSet) {
                 ByteBufUtil.writeString(buf, bitSet);
             } else {
-                buf.writeByte(unknownByte0);
+                buf.writeByte(graphicsProfile);
             }
             ByteBufUtil.writeString(buf, fallback);
 
@@ -247,7 +251,8 @@ public class CompiledMaterialDefinition {
     }
 
     public static class Variant {
-        public boolean unknownBool0;
+        @SerializedName(value = "isSupported", alternate = {"unknownBool0"})
+        public boolean isSupported;
         public List<FlagMode> flagModeList;
         public transient Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
 
@@ -255,7 +260,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void read(ByteBuf buf) {
-            unknownBool0 = buf.readBoolean();
+            isSupported = buf.readBoolean();
             short flagModeCount = buf.readShortLE();
             short shaderCodeCount = buf.readShortLE();
 
@@ -277,7 +282,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void write(ByteBuf buf) {
-            buf.writeBoolean(unknownBool0);
+            buf.writeBoolean(isSupported);
             buf.writeShortLE(flagModeList.size());
             buf.writeShortLE(shaderCodeMap.size());
             for (FlagMode flagMode : flagModeList) {
@@ -292,7 +297,8 @@ public class CompiledMaterialDefinition {
 
     public static class ShaderCode {
         public Map<String, ShaderInput> shaderInputMap;
-        public long unknownLong0;
+        @SerializedName(value = "sourceHash", alternate = {"unknownLong0"})
+        public long sourceHash;
         public transient byte[] bgfxShaderData;
 
         public ShaderCode() {
@@ -307,7 +313,7 @@ public class CompiledMaterialDefinition {
                 shaderInput.read(buf);
                 shaderInputMap.put(name, shaderInput);
             }
-            unknownLong0 = buf.readLong();
+            sourceHash = buf.readLong();
             bgfxShaderData = ByteBufUtil.readByteArray(buf);
         }
 
@@ -317,7 +323,7 @@ public class CompiledMaterialDefinition {
                 ByteBufUtil.writeString(buf, entry.getKey());
                 entry.getValue().write(buf);
             }
-            buf.writeLong(unknownLong0);
+            buf.writeLong(sourceHash);
             ByteBufUtil.writeByteArray(buf, bgfxShaderData);
         }
     }

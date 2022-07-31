@@ -6,17 +6,23 @@ import io.netty.buffer.ByteBuf;
 
 public class SamplerDefinition {
     public byte reg;
-    public byte unknownByte1;
-    public byte unknownByte2;
-    public boolean unknownBool0;
-    public byte unknownByte3;
+    @SerializedName(value = "access", alternate = {"unknownByte1"})
+    public byte access;
+    @SerializedName(value = "precision", alternate = {"unknownByte2"})
+    public byte precision;
+    @SerializedName(value = "allowUnorderedAccess", alternate = {"unknownBool0"})
+    public boolean allowUnorderedAccess;
+    @SerializedName(value = "type", alternate = {"unknownByte3"})
+    public byte type;
     public String textureFormat; //空字符串 / rgba16f / rgba8 / rg16f / r32ui
 
     public boolean hasUnknownInt;
-    public int unknownInt;
+    public int unknownInt; //1
 
-    public boolean unknownBool1;
-    public String unknownStr1; //white
+    @SerializedName(value = "hasDefaultTexture", alternate = {"unknownBool1"})
+    public boolean hasDefaultTexture;
+    @SerializedName(value = "defaultTexture", alternate = {"unknownStr1"})
+    public String defaultTexture; //white
 
     public boolean hasCustomTypeInfo;
     public CustomTypeInfo customTypeInfo;
@@ -26,10 +32,10 @@ public class SamplerDefinition {
 
     public void read(ByteBuf buf) {
         reg = buf.readByte();
-        unknownByte1 = buf.readByte();
-        unknownByte2 = buf.readByte();
-        unknownBool0 = buf.readBoolean();
-        unknownByte3 = buf.readByte();
+        access = buf.readByte();
+        precision = buf.readByte();
+        allowUnorderedAccess = buf.readBoolean();
+        type = buf.readByte();
         textureFormat = ByteBufUtil.readString(buf);
 
         int unkInt = buf.readIntLE();
@@ -41,9 +47,9 @@ public class SamplerDefinition {
             buf.readerIndex(buf.readerIndex() - 4);
         }
 
-        unknownBool1 = buf.readBoolean();
-        if (unknownBool1) {
-            unknownStr1 = ByteBufUtil.readString(buf);
+        hasDefaultTexture = buf.readBoolean();
+        if (hasDefaultTexture) {
+            defaultTexture = ByteBufUtil.readString(buf);
         }
 
         hasCustomTypeInfo = buf.readBoolean();
@@ -56,19 +62,19 @@ public class SamplerDefinition {
 
     public void write(ByteBuf buf) {
         buf.writeByte(reg);
-        buf.writeByte(unknownByte1);
-        buf.writeByte(unknownByte2);
-        buf.writeBoolean(unknownBool0);
-        buf.writeByte(unknownByte3);
+        buf.writeByte(access);
+        buf.writeByte(precision);
+        buf.writeBoolean(allowUnorderedAccess);
+        buf.writeByte(type);
         ByteBufUtil.writeString(buf, textureFormat);
 
         if (hasUnknownInt) {
             buf.writeIntLE(unknownInt);
         }
 
-        buf.writeBoolean(unknownBool1);
-        if (unknownBool1) {
-            ByteBufUtil.writeString(buf, unknownStr1);
+        buf.writeBoolean(hasDefaultTexture);
+        if (hasDefaultTexture) {
+            ByteBufUtil.writeString(buf, defaultTexture);
         }
 
         buf.writeBoolean(hasCustomTypeInfo);
