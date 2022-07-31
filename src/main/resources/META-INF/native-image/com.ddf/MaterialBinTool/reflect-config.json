@@ -32,12 +32,27 @@
 {
   "name":"com.ddf.materialbintool.bgfx.BgfxShaderD3D",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.bgfx.BgfxShaderGL",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.bgfx.BgfxShaderMtl",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.bgfx.BgfxShaderVK",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.bgfx.Uniform",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.main.Args",
@@ -47,27 +62,27 @@
 {
   "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition$Pass",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition$ShaderCode",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition$Variant",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.PlatformShaderStage",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.ShaderCodePlatform",
@@ -88,7 +103,7 @@
 {
   "name":"com.ddf.materialbintool.materials.definition.FlagMode",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.definition.InterpolationConstraint",
@@ -101,12 +116,12 @@
 {
   "name":"com.ddf.materialbintool.materials.definition.PropertyField",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.definition.SamplerDefinition",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.definition.SamplerDefinition$CustomTypeInfo",
@@ -116,7 +131,7 @@
 {
   "name":"com.ddf.materialbintool.materials.definition.ShaderInput",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.definition.ShaderInput$Attribute",
@@ -142,12 +157,23 @@
   "name":"java.security.MessageDigestSpi"
 },
 {
+  "name":"java.security.SecureRandomParameters"
+},
+{
   "name":"sun.misc.Unsafe",
   "fields":[{"name":"theUnsafe"}],
   "methods":[
     {"name":"objectFieldOffset","parameterTypes":["java.lang.reflect.Field"] }, 
     {"name":"putBoolean","parameterTypes":["java.lang.Object","long","boolean"] }
   ]
+},
+{
+  "name":"sun.security.provider.DRBG",
+  "methods":[{"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"sun.security.provider.SHA2$SHA256",
