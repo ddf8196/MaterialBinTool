@@ -1,7 +1,6 @@
 package com.ddf.materialbintool.materials.definition;
 
-import com.ddf.materialbintool.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.util.ByteBuf;
 
 public class FlagMode {
     private String key;
@@ -11,13 +10,13 @@ public class FlagMode {
     }
 
     public void read(ByteBuf buf) {
-        key = ByteBufUtil.readString(buf);
-        value = ByteBufUtil.readString(buf);
+        key = buf.readStringLE();
+        value = buf.readStringLE();
     }
 
     public void write(ByteBuf buf) {
-        ByteBufUtil.writeString(buf, key);
-        ByteBufUtil.writeString(buf, value);
+        buf.writeStringLE(key);
+        buf.writeStringLE(value);
     }
 
     public String getKey() {

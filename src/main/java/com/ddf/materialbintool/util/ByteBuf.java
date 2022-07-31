@@ -1,5 +1,6 @@
 package com.ddf.materialbintool.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class ByteBuf {
@@ -8,11 +9,16 @@ public class ByteBuf {
     private int writerIndex = 0;
 
     public ByteBuf() {
-        this.array = new byte[1024];
+        this(1024);
+    }
+
+    public ByteBuf(int size) {
+        this.array = new byte[size];
     }
 
     public ByteBuf(byte[] array) {
         this.array = array;
+        this.writerIndex = array.length;
     }
 
     public int readerIndex() {
@@ -29,6 +35,18 @@ public class ByteBuf {
 
     public void writerIndex(int index) {
         this.writerIndex = index;
+    }
+
+    public boolean isReadable() {
+        return readerIndex < this.writerIndex;
+    }
+
+    public byte[] toByteArray() {
+        return Arrays.copyOfRange(array, readerIndex, writerIndex);
+    }
+
+    public boolean readBoolean() {
+        return array[readerIndex++] != 0;
     }
 
     public byte readByte() {
@@ -61,6 +79,14 @@ public class ByteBuf {
                 | (array[readerIndex++] & 0xFF) << 24;
     }
 
+    public float readFloat() {
+        return Float.intBitsToFloat(readInt());
+    }
+
+    public float readFloatLE() {
+        return Float.intBitsToFloat(readIntLE());
+    }
+
     public long readLong() {
         return (long) (array[readerIndex++] & 0xFF) << 56
                 | (long) (array[readerIndex++] & 0xFF) << 48
@@ -83,6 +109,14 @@ public class ByteBuf {
                 | (long) (array[readerIndex++] & 0xFF) << 56;
     }
 
+    public double readDouble() {
+        return Double.longBitsToDouble(readLong());
+    }
+
+    public double readDoubleLE() {
+        return Double.longBitsToDouble(readLongLE());
+    }
+
     public byte[] readBytes(int len) {
         byte[] result = Arrays.copyOfRange(array, readerIndex, readerIndex + len);
         readerIndex += len;
@@ -99,30 +133,42 @@ public class ByteBuf {
         return readBytes(len);
     }
 
+    public String readString() {
+        return new String(readByteArray(), StandardCharsets.UTF_8);
+    }
+
+    public String readStringLE() {
+        return new String(readByteArrayLE(), StandardCharsets.UTF_8);
+    }
+
     private void ensureWritable(int len) {
-        if (writerIndex + len >= array.length) {
-            int newCapacity = array.length + (array.length >> 1);
-            array = Arrays.copyOf(array, newCapacity);
+        if (writerIndex + len < array.length) {
+            return;
         }
+        int newCapacity = array.length;
+        while (writerIndex + len >= newCapacity) {
+            newCapacity = 1 + newCapacity + (newCapacity >> 1);
+        }
+        array = Arrays.copyOf(array, newCapacity);
     }
 
-    public void writeByte(byte b) {
+    public void writeBoolean(boolean b) {
         ensureWritable(1);
-        array[writerIndex++] = b;
+        array[writerIndex++] = (byte) (b ? 1 : 0);
     }
 
-    public void writeUnsignedByte(int b) {
+    public void writeByte(int b) {
         ensureWritable(1);
         array[writerIndex++] = (byte) b;
     }
 
-    public void writeShort(short s) {
+    public void writeShort(int s) {
         ensureWritable(2);
         array[writerIndex++] = (byte) (s >>> 8);
         array[writerIndex++] = (byte) s;
     }
 
-    public void writeShortLE(short s) {
+    public void writeShortLE(int s) {
         ensureWritable(2);
         array[writerIndex++] = (byte) s;
         array[writerIndex++] = (byte) (s >>> 8);
@@ -142,6 +188,14 @@ public class ByteBuf {
         array[writerIndex++] = (byte) (i >>> 8);
         array[writerIndex++] = (byte) (i >>> 16);
         array[writerIndex++] = (byte) (i >>> 24);
+    }
+
+    public void writeFloat(float f) {
+        writeInt(Float.floatToRawIntBits(f));
+    }
+
+    public void writeFloatLE(float f) {
+        writeIntLE(Float.floatToRawIntBits(f));
     }
 
     public void writeLong(long l) {
@@ -168,7 +222,35 @@ public class ByteBuf {
         array[writerIndex++] = (byte) (l >>> 56);
     }
 
+    public void writeDouble(double d) {
+        writeLong(Double.doubleToRawLongBits(d));
+    }
+
+    public void writeDoubleLE(double d) {
+        writeLongLE(Double.doubleToRawLongBits(d));
+    }
+
     public void writeBytes(byte[] bytes) {
         ensureWritable(bytes.length);
+        System.arraycopy(bytes, 0, array, writerIndex, bytes.length);
+        writerIndex += bytes.length;
+    }
+
+    public void writeByteArray(byte[] bytes) {
+        writeInt(bytes.length);
+        writeBytes(bytes);
+    }
+
+    public void writeByteArrayLE(byte[] bytes) {
+        writeIntLE(bytes.length);
+        writeBytes(bytes);
+    }
+
+    public void writeString(String string) {
+        writeByteArray(string.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public void writeStringLE(String string) {
+        writeByteArrayLE(string.getBytes(StandardCharsets.UTF_8));
     }
 }

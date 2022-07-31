@@ -1,6 +1,6 @@
 package com.ddf.materialbintool.bgfx;
 
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.util.ByteBuf;
 
 public class BgfxShaderVK extends BgfxShader {
     private short[] attrs;

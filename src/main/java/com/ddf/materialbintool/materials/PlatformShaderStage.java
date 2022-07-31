@@ -1,7 +1,6 @@
 package com.ddf.materialbintool.materials;
 
-import com.ddf.materialbintool.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.util.ByteBuf;
 
 import java.util.Objects;
 
@@ -21,15 +20,15 @@ public class PlatformShaderStage {
     }
 
     public void read(ByteBuf buf) {
-        typeName = ByteBufUtil.readString(buf);
-        platformName = ByteBufUtil.readString(buf);
+        typeName = buf.readStringLE();
+        platformName = buf.readStringLE();
         type = ShaderCodeType.get(buf.readByte());
         platform = ShaderCodePlatform.get(buf.readByte());
     }
 
     public void write(ByteBuf buf) {
-        ByteBufUtil.writeString(buf, typeName);
-        ByteBufUtil.writeString(buf, platformName);
+        buf.writeStringLE(typeName);
+        buf.writeStringLE(platformName);
         buf.writeByte(type.ordinal());
         buf.writeByte(platform.ordinal());
     }

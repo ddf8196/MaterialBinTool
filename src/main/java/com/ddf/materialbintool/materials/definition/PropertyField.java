@@ -1,8 +1,6 @@
 package com.ddf.materialbintool.materials.definition;
 
-import com.ddf.materialbintool.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
-
+import com.ddf.materialbintool.util.ByteBuf;
 
 public class PropertyField {
     private int num;
@@ -34,7 +32,7 @@ public class PropertyField {
                 num = buf.readIntLE();
                 hasData = buf.readBoolean();
                 if (hasData) {
-                    matrixData = ByteBufUtil.readBytes(buf, 36);
+                    matrixData = buf.readBytes(36);
                 }
                 break;
             }
@@ -42,7 +40,7 @@ public class PropertyField {
                 num = buf.readIntLE();
                 hasData = buf.readBoolean();
                 if (hasData) {
-                    matrixData = ByteBufUtil.readBytes(buf, 64);
+                    matrixData = buf.readBytes(64);
                 }
                 break;
             }
@@ -74,7 +72,7 @@ public class PropertyField {
                 buf.writeIntLE(num);
                 buf.writeBoolean(hasData);
                 if (hasData) {
-                    ByteBufUtil.writeByteArray(buf, matrixData);
+                    buf.writeBytes(matrixData);
                 }
                 break;
             }

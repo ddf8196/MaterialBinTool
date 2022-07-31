@@ -1,7 +1,6 @@
 package com.ddf.materialbintool.bgfx;
 
-import com.ddf.materialbintool.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.util.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
 
@@ -17,7 +16,7 @@ public class Uniform {
 
     public void readFrom(ByteBuf buf) {
         byte nameLength = buf.readByte();
-        name = new String(ByteBufUtil.readBytes(buf, nameLength), StandardCharsets.UTF_8);
+        name = new String(buf.readBytes(nameLength), StandardCharsets.UTF_8);
         type = buf.readByte();
         num = buf.readByte();
         regIndex = buf.readShortLE();

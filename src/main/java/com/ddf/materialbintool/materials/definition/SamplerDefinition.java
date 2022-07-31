@@ -1,8 +1,7 @@
 package com.ddf.materialbintool.materials.definition;
 
-import com.ddf.materialbintool.util.ByteBufUtil;
+import com.ddf.materialbintool.util.ByteBuf;
 import com.google.gson.annotations.SerializedName;
-import io.netty.buffer.ByteBuf;
 
 public class SamplerDefinition {
     public byte reg;
@@ -36,7 +35,7 @@ public class SamplerDefinition {
         precision = buf.readByte();
         allowUnorderedAccess = buf.readBoolean();
         type = buf.readByte();
-        textureFormat = ByteBufUtil.readString(buf);
+        textureFormat = buf.readStringLE();
 
         int unkInt = buf.readIntLE();
         if (unkInt == 1) {
@@ -49,13 +48,13 @@ public class SamplerDefinition {
 
         hasDefaultTexture = buf.readBoolean();
         if (hasDefaultTexture) {
-            defaultTexture = ByteBufUtil.readString(buf);
+            defaultTexture = buf.readStringLE();
         }
 
         hasCustomTypeInfo = buf.readBoolean();
         if (hasCustomTypeInfo) {
             customTypeInfo = new CustomTypeInfo();
-            customTypeInfo.name = ByteBufUtil.readString(buf);
+            customTypeInfo.name = buf.readStringLE();
             customTypeInfo.size = buf.readIntLE();
         }
     }
@@ -66,7 +65,7 @@ public class SamplerDefinition {
         buf.writeByte(precision);
         buf.writeBoolean(allowUnorderedAccess);
         buf.writeByte(type);
-        ByteBufUtil.writeString(buf, textureFormat);
+        buf.writeStringLE(textureFormat);
 
         if (hasUnknownInt) {
             buf.writeIntLE(unknownInt);
@@ -74,12 +73,12 @@ public class SamplerDefinition {
 
         buf.writeBoolean(hasDefaultTexture);
         if (hasDefaultTexture) {
-            ByteBufUtil.writeString(buf, defaultTexture);
+            buf.writeStringLE(defaultTexture);
         }
 
         buf.writeBoolean(hasCustomTypeInfo);
         if (hasCustomTypeInfo) {
-            ByteBufUtil.writeString(buf, customTypeInfo.name);
+            buf.writeStringLE(customTypeInfo.name);
             buf.writeIntLE(customTypeInfo.size);
         }
     }

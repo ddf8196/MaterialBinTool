@@ -1,7 +1,6 @@
 package com.ddf.materialbintool.bgfx;
 
-import com.ddf.materialbintool.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.util.ByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +49,7 @@ public abstract class BgfxShader {
             uniforms.add(uniform);
         }
 
-        code = ByteBufUtil.readByteArray(buf);
+        code = buf.readByteArrayLE();
         buf.readByte(); //0
     }
 
@@ -63,18 +62,18 @@ public abstract class BgfxShader {
             uniform.writeTo(buf);
         }
 
-        ByteBufUtil.writeByteArray(buf, code);
+        buf.writeByteArrayLE(code);
         buf.writeByte(0);
     }
 
     public void read(byte[] array) {
-        read(ByteBufUtil.wrappedBuffer(array));
+        read(new ByteBuf(array));
     }
 
     public byte[] toByteArray() {
-        ByteBuf buf = ByteBufUtil.buffer();
+        ByteBuf buf = new ByteBuf();
         write(buf);
-        return ByteBufUtil.toByteArray(buf);
+        return buf.toByteArray();
     }
 
     public int getMagic() {

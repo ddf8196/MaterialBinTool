@@ -1,6 +1,6 @@
 package com.ddf.materialbintool.materials.definition;
 
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.util.ByteBuf;
 
 public class ShaderInput {
     public Type type;

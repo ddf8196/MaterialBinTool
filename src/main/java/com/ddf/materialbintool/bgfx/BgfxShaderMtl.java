@@ -1,7 +1,6 @@
 package com.ddf.materialbintool.bgfx;
 
-import com.ddf.materialbintool.util.ByteBufUtil;
-import io.netty.buffer.ByteBuf;
+import com.ddf.materialbintool.util.ByteBuf;
 
 import java.util.ArrayList;
 
@@ -30,7 +29,7 @@ public class BgfxShaderMtl extends BgfxShader {
             }
         }
 
-        code = ByteBufUtil.readByteArray(buf);
+        code = buf.readByteArrayLE();
         buf.readByte(); //0
 
         if (buf.isReadable()) {

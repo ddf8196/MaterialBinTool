@@ -1,10 +1,9 @@
 package com.ddf.materialbintool.materials;
 
 import com.ddf.materialbintool.materials.definition.*;
-import com.ddf.materialbintool.util.ByteBufUtil;
+import com.ddf.materialbintool.util.ByteBuf;
 import com.ddf.materialbintool.util.Util;
 import com.google.gson.annotations.SerializedName;
-import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -32,7 +31,7 @@ public class CompiledMaterialDefinition {
         long magic = buf.readLongLE();
         if (magic != MAGIC)
             return;
-		if (!COMPILED_MATERIAL_DEFINITION.equals(ByteBufUtil.readString(buf)))
+		if (!COMPILED_MATERIAL_DEFINITION.equals(buf.readStringLE()))
 			return;
         version = buf.readLongLE();
         if (version < 0x16)
@@ -53,20 +52,20 @@ public class CompiledMaterialDefinition {
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
-                byte[] key = ByteBufUtil.readByteArray(buf);
+                byte[] key = buf.readByteArrayLE();
                 if (!Arrays.equals(key, digest)) {
                     //???
                 }
-                byte[] iv = ByteBufUtil.readByteArray(buf);
-                byte[] encrypted = ByteBufUtil.readByteArray(buf);
-				ByteBuf decrypted = ByteBufUtil.wrappedBuffer(Util.decrypt(key, iv, encrypted));
+                byte[] iv = buf.readByteArrayLE();
+                byte[] encrypted = buf.readByteArrayLE();
+				ByteBuf decrypted = new ByteBuf(Util.decrypt(key, iv, encrypted));
 				loadContent(decrypted);
 				break;
             }
             case KeyPair: {
-                byte[] data = ByteBufUtil.readByteArray(buf);
-                byte[] iv = ByteBufUtil.readByteArray(buf);
-                byte[] encrypted = ByteBufUtil.readByteArray(buf);
+                byte[] data = buf.readByteArrayLE();
+                byte[] iv = buf.readByteArrayLE();
+                byte[] encrypted = buf.readByteArrayLE();
                 break;
             }
             default: {
@@ -76,15 +75,15 @@ public class CompiledMaterialDefinition {
     }
 
     private boolean loadContent(ByteBuf buf) {
-        name = ByteBufUtil.readString(buf);
+        name = buf.readStringLE();
         hasParentName = buf.readBoolean();
         if (hasParentName)
-            parentName = ByteBufUtil.readString(buf);
+            parentName = buf.readStringLE();
 
         int samplerDefinitionCount = buf.readUnsignedByte();
         samplerDefinitionMap = new LinkedHashMap<>(samplerDefinitionCount);
         for (int i = 0; i < samplerDefinitionCount; i++) {
-            String name = ByteBufUtil.readString(buf);
+            String name = buf.readStringLE();
 			SamplerDefinition samplerDefinition = new SamplerDefinition();
 			samplerDefinition.read(buf);
 			samplerDefinitionMap.put(name, samplerDefinition);
@@ -93,7 +92,7 @@ public class CompiledMaterialDefinition {
         short propertyFieldCount = buf.readShortLE();
         propertyFieldMap = new LinkedHashMap<>(propertyFieldCount);
         for (int i = 0; i < propertyFieldCount; i++) {
-            String name = ByteBufUtil.readString(buf);
+            String name = buf.readStringLE();
             PropertyField propertyField = new PropertyField();
             propertyField.read(buf);
             propertyFieldMap.put(name, propertyField);
@@ -102,7 +101,7 @@ public class CompiledMaterialDefinition {
         short passCount = buf.readShortLE();
         passMap = new LinkedHashMap<>(passCount);
         for (int i = 0; i < passCount; ++i) {
-            String name = ByteBufUtil.readString(buf);
+            String name = buf.readStringLE();
             Pass pass = new Pass();
             pass.read(buf);
             passMap.put(name, pass);
@@ -113,7 +112,7 @@ public class CompiledMaterialDefinition {
 
     public void saveTo(ByteBuf buf, EncryptionVariants encryptionVariant) {
         buf.writeLongLE(MAGIC);
-        ByteBufUtil.writeString(buf, COMPILED_MATERIAL_DEFINITION);
+        buf.writeStringLE(COMPILED_MATERIAL_DEFINITION);
         buf.writeLongLE(version);
         buf.writeIntLE(encryptionVariant.getSignature());
 
@@ -131,16 +130,16 @@ public class CompiledMaterialDefinition {
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
-                ByteBufUtil.writeByteArray(buf, key);
+                buf.writeByteArrayLE(key);
 
                 byte[] iv = new byte[16];
                 new SecureRandom().nextBytes(iv);
-                ByteBufUtil.writeByteArray(buf, iv);
+                buf.writeByteArrayLE(iv);
 
-                ByteBuf byteBuf = ByteBufUtil.buffer();
+                ByteBuf byteBuf = new ByteBuf();
                 saveContent(byteBuf);
 
-                ByteBufUtil.writeByteArray(buf, Util.encrypt(key, iv, ByteBufUtil.toByteArray(byteBuf)));
+                buf.writeByteArrayLE(Util.encrypt(key, iv, byteBuf.toByteArray()));
                 return;
             }
             case KeyPair:
@@ -149,26 +148,26 @@ public class CompiledMaterialDefinition {
     }
 
     private void saveContent(ByteBuf buf) {
-        ByteBufUtil.writeString(buf, name);
+        buf.writeStringLE(name);
         buf.writeBoolean(hasParentName);
         if (hasParentName)
-            ByteBufUtil.writeString(buf, parentName);
+            buf.writeStringLE(parentName);
 
         buf.writeByte(samplerDefinitionMap.size());
         for (Map.Entry<String, SamplerDefinition> entry : samplerDefinitionMap.entrySet()) {
-            ByteBufUtil.writeString(buf, entry.getKey());
+            buf.writeStringLE(entry.getKey());
             entry.getValue().write(buf);
         }
 
         buf.writeShortLE(propertyFieldMap.size());
         for (Map.Entry<String, PropertyField> entry : propertyFieldMap.entrySet()) {
-            ByteBufUtil.writeString(buf, entry.getKey());
+            buf.writeStringLE(entry.getKey());
             entry.getValue().write(buf, entry.getKey());
         }
 
         buf.writeShortLE(passMap.size());
         for (Map.Entry<String, Pass> entry : passMap.entrySet()) {
-            ByteBufUtil.writeString(buf, entry.getKey());
+            buf.writeStringLE(entry.getKey());
             entry.getValue().write(buf);
         }
 
@@ -196,11 +195,11 @@ public class CompiledMaterialDefinition {
             buf.readerIndex(buf.readerIndex() - 4);
 
             if (hasBitSet) {
-                bitSet = ByteBufUtil.readString(buf);
+                bitSet = buf.readStringLE();
             } else {
                 graphicsProfile = buf.readByte();
             }
-            fallback = ByteBufUtil.readString(buf);
+            fallback = buf.readStringLE();
 
             hasBlendMode = buf.readBoolean();
             if (hasBlendMode) {
@@ -210,8 +209,8 @@ public class CompiledMaterialDefinition {
             short defaultFlagModeCount = buf.readShortLE();
             defaultFlagModes = new LinkedHashMap<>(defaultFlagModeCount);
             for (int i = 0; i < defaultFlagModeCount; ++i) {
-                String key = ByteBufUtil.readString(buf);
-                String value = ByteBufUtil.readString(buf);
+                String key = buf.readStringLE();
+                String value = buf.readStringLE();
                 defaultFlagModes.put(key, value);
             }
 
@@ -226,11 +225,11 @@ public class CompiledMaterialDefinition {
 
         public void write(ByteBuf buf) {
             if (hasBitSet) {
-                ByteBufUtil.writeString(buf, bitSet);
+                buf.writeStringLE(bitSet);
             } else {
                 buf.writeByte(graphicsProfile);
             }
-            ByteBufUtil.writeString(buf, fallback);
+            buf.writeStringLE(fallback);
 
             buf.writeBoolean(hasBlendMode);
             if (hasBlendMode) {
@@ -239,8 +238,8 @@ public class CompiledMaterialDefinition {
 
             buf.writeShortLE(defaultFlagModes.size());
             for (Map.Entry<String, String> entry : defaultFlagModes.entrySet()) {
-                ByteBufUtil.writeString(buf, entry.getKey());
-                ByteBufUtil.writeString(buf, entry.getValue());
+                buf.writeStringLE(entry.getKey());
+                buf.writeStringLE(entry.getValue());
             }
 
             buf.writeShortLE(variantList.size());
@@ -308,23 +307,23 @@ public class CompiledMaterialDefinition {
             short shaderInputCount = buf.readShortLE();
             shaderInputMap = new LinkedHashMap<>(shaderInputCount);
             for (int i = 0; i < shaderInputCount; ++i) {
-                String name = ByteBufUtil.readString(buf);
+                String name = buf.readStringLE();
                 ShaderInput shaderInput = new ShaderInput();
                 shaderInput.read(buf);
                 shaderInputMap.put(name, shaderInput);
             }
             sourceHash = buf.readLong();
-            bgfxShaderData = ByteBufUtil.readByteArray(buf);
+            bgfxShaderData = buf.readByteArrayLE();
         }
 
         public void write(ByteBuf buf) {
             buf.writeShortLE(shaderInputMap.size());
             for (Map.Entry<String, ShaderInput> entry : shaderInputMap.entrySet()) {
-                ByteBufUtil.writeString(buf, entry.getKey());
+                buf.writeStringLE(entry.getKey());
                 entry.getValue().write(buf);
             }
             buf.writeLong(sourceHash);
-            ByteBufUtil.writeByteArray(buf, bgfxShaderData);
+            buf.writeByteArrayLE(bgfxShaderData);
         }
     }
 }

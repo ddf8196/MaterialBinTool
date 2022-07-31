@@ -11,10 +11,9 @@ import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
 import com.ddf.materialbintool.materials.definition.EncryptionVariants;
 import com.ddf.materialbintool.materials.definition.FlagMode;
-import com.ddf.materialbintool.util.ByteBufUtil;
 import com.ddf.materialbintool.main.util.FileUtil;
+import com.ddf.materialbintool.util.ByteBuf;
 import com.google.gson.*;
-import io.netty.buffer.ByteBuf;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -78,9 +77,9 @@ public class Main {
 
 			System.out.println("Repacking " + outputFile.getName());
 			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
-			ByteBuf buf = ByteBufUtil.buffer();
+			ByteBuf buf = new ByteBuf();
 			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
-			FileUtil.write(outputFile, ByteBufUtil.toByteArray(buf));
+			FileUtil.write(outputFile, buf.toByteArray());
 		} else if (args.compile) {
 			File jsonFile = getInputJsonFile(inputFile);
 			File outputFile = getRepackOutputFile(inputFile, args.outputPath);
@@ -187,9 +186,9 @@ public class Main {
 				}
 			}
 
-			ByteBuf buf = ByteBufUtil.buffer();
+			ByteBuf buf = new ByteBuf();
 			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
-			FileUtil.write(outputFile, ByteBufUtil.toByteArray(buf));
+			FileUtil.write(outputFile, buf.toByteArray());
 		} else if (args.diff) {
 
 		} else if (args.patch) {
@@ -269,7 +268,7 @@ public class Main {
 	}
 
 	public static void unpack(File inputFile, String outputDirPath, boolean addFlagModesToCode, boolean raw) {
-		ByteBuf buf = ByteBufUtil.wrappedBuffer(FileUtil.readAllBytes(inputFile));
+		ByteBuf buf = new ByteBuf(FileUtil.readAllBytes(inputFile));
 		CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
 		cmd.loadFrom(buf);
 
