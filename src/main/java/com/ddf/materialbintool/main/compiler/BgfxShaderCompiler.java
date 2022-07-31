@@ -2,7 +2,7 @@ package com.ddf.materialbintool.main.compiler;
 
 import com.ddf.materialbintool.main.util.FileUtil;
 import com.ddf.materialbintool.materials.ShaderCodePlatform;
-import com.ddf.materialbintool.materials.ShaderCodeType;
+import com.ddf.materialbintool.materials.definition.ShaderStage;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class BgfxShaderCompiler {
         includePaths.add(includePath);
     }
 
-    public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderCodeType type) {
+    public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderStage type) {
         File tempOutputFile = new File(tempDir, System.nanoTime() + Integer.toHexString(random.nextInt()));
         int code = compile(input, varyingDef, tempOutputFile, defines, platform, type);
         if (code == 0) {
@@ -38,7 +38,7 @@ public class BgfxShaderCompiler {
         }
     }
 
-    public int compile(File input, File varyingDef, File output, Defines defines, ShaderCodePlatform platform, ShaderCodeType type) {
+    public int compile(File input, File varyingDef, File output, Defines defines, ShaderCodePlatform platform, ShaderStage stage) {
         List<String> command = new ArrayList<>();
         command.add(compilerPath);
 
@@ -58,10 +58,10 @@ public class BgfxShaderCompiler {
         command.add(toPlatformString(platform));
 
         command.add("--type");
-        command.add(toTypeString(type));
+        command.add(toTypeString(stage));
 
         command.add("--profile");
-        command.add(toProfileString(platform, type));
+        command.add(toProfileString(platform, stage));
 
         for (String includePath : includePaths) {
             command.add("-i");
@@ -114,8 +114,8 @@ public class BgfxShaderCompiler {
         }
     }
 
-    private static String toTypeString(ShaderCodeType shaderCodeType) {
-        switch (shaderCodeType) {
+    private static String toTypeString(ShaderStage shaderStage) {
+        switch (shaderStage) {
             case Vertex:
                 return "vertex";
             case Fragment:
@@ -129,9 +129,9 @@ public class BgfxShaderCompiler {
         }
     }
 
-    private static String toProfileString(ShaderCodePlatform platform, ShaderCodeType type) {
+    private static String toProfileString(ShaderCodePlatform platform, ShaderStage stage) {
         String prefix = "";
-        switch (type) {
+        switch (stage) {
             case Vertex:
                 prefix = "v";
                 break;

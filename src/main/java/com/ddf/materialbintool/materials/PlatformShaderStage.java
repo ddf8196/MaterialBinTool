@@ -1,35 +1,39 @@
 package com.ddf.materialbintool.materials;
 
+import com.ddf.materialbintool.materials.definition.ShaderStage;
 import com.ddf.materialbintool.util.ByteBuf;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.Objects;
 
 public class PlatformShaderStage {
-    public String typeName;
+    @SerializedName(value = "stageName", alternate = {"typeName"})
+    public String stageName;
     public String platformName;
-    public ShaderCodeType type;
+    @SerializedName(value = "stage", alternate = {"type"})
+    public ShaderStage stage;
     public ShaderCodePlatform platform;
 
     public PlatformShaderStage() {}
 
-    public PlatformShaderStage(ShaderCodeType type, ShaderCodePlatform platform) {
-        this.type = type;
+    public PlatformShaderStage(ShaderStage stage, ShaderCodePlatform platform) {
+        this.stage = stage;
         this.platform = platform;
-        this.typeName = type.name();
+        this.stageName = stage.name();
         this.platformName = platform.name();
     }
 
     public void read(ByteBuf buf) {
-        typeName = buf.readStringLE();
+        stageName = buf.readStringLE();
         platformName = buf.readStringLE();
-        type = ShaderCodeType.get(buf.readByte());
+        stage = ShaderStage.get(buf.readByte());
         platform = ShaderCodePlatform.get(buf.readByte());
     }
 
     public void write(ByteBuf buf) {
-        buf.writeStringLE(typeName);
+        buf.writeStringLE(stageName);
         buf.writeStringLE(platformName);
-        buf.writeByte(type.ordinal());
+        buf.writeByte(stage.ordinal());
         buf.writeByte(platform.ordinal());
     }
 
@@ -38,20 +42,20 @@ public class PlatformShaderStage {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlatformShaderStage that = (PlatformShaderStage) o;
-        return type == that.type && platform == that.platform;
+        return stage == that.stage && platform == that.platform;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, platform);
+        return Objects.hash(stage, platform);
     }
 
     @Override
     public String toString() {
         return "PlatformShaderStage{" +
-                "typeName='" + typeName + '\'' +
+                "typeName='" + stageName + '\'' +
                 ", platformName='" + platformName + '\'' +
-                ", type=" + type +
+                ", type=" + stage +
                 ", platform=" + platform +
                 '}';
     }

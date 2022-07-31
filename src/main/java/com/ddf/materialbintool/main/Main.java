@@ -5,7 +5,6 @@ import com.beust.jcommander.ParameterException;
 import com.ddf.materialbintool.bgfx.BgfxShader;
 import com.ddf.materialbintool.main.compiler.BgfxShaderCompiler;
 import com.ddf.materialbintool.main.compiler.Defines;
-import com.ddf.materialbintool.main.util.ByteArrayList;
 import com.ddf.materialbintool.main.util.StringUtil;
 import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
@@ -161,7 +160,7 @@ public class Main {
 						}
 
 						File input;
-						switch (platformShaderStage.type) {
+						switch (platformShaderStage.stage) {
 							case Vertex:
 								input = vertexSourceFile;
 								break;
@@ -176,7 +175,7 @@ public class Main {
 								input = fragmentSourceFile;
 								break;
 						}
-						byte[] compiled = compiler.compile(input, varyingDefFile, defines, platformShaderStage.platform, platformShaderStage.type);
+						byte[] compiled = compiler.compile(input, varyingDefFile, defines, platformShaderStage.platform, platformShaderStage.stage);
 						if (compiled != null) {
 							shaderCode.bgfxShaderData = compiled;
 						}
@@ -412,7 +411,7 @@ public class Main {
 	}
 
 	private static String toFileName(PlatformShaderStage platformShaderStage, boolean raw) {
-		String fileName = platformShaderStage.platformName + "." + platformShaderStage.type;
+		String fileName = platformShaderStage.platformName + "." + platformShaderStage.stageName;
 		if (raw)
 			fileName += ".bin";
 		else if (platformShaderStage.platformName.startsWith("Direct3D"))
