@@ -142,11 +142,11 @@ public class ByteBuf {
     }
 
     private void ensureWritable(int len) {
-        if (writerIndex + len < array.length) {
+        if (writerIndex + len <= array.length) {
             return;
         }
         int newCapacity = array.length;
-        while (writerIndex + len >= newCapacity) {
+        while (writerIndex + len > newCapacity) {
             newCapacity = 1 + newCapacity + (newCapacity >> 1);
         }
         array = Arrays.copyOf(array, newCapacity);

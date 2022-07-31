@@ -133,29 +133,10 @@ public abstract class Pack
         }
     }
 
-    public static void longToBigEndian(long[] ns, int nsOff, int nsLen, byte[] bs, int bsOff)
-    {
-        for (int i = 0; i < nsLen; ++i)
-        {
+    public static void longToBigEndian(long[] ns, int nsOff, int nsLen, byte[] bs, int bsOff) {
+        for (int i = 0; i < nsLen; ++i) {
             longToBigEndian(ns[nsOff + i], bs, bsOff);
             bsOff += 8;
-        }
-    }
-
-    /**
-     * @param value The number
-     * @param bs    The target.
-     * @param off   Position in target to start.
-     * @param bytes number of bytes to write.
-     * 
-     * @deprecated Will be removed
-     */
-    public static void longToBigEndian(long value, byte[] bs, int off, int bytes)
-    {
-        for (int i = bytes - 1; i >= 0; i--)
-        {
-            bs[i + off] = (byte)(value & 0xff);
-            value >>>= 8;
         }
     }
 

@@ -5,6 +5,7 @@ import com.beust.jcommander.ParameterException;
 import com.ddf.materialbintool.bgfx.BgfxShader;
 import com.ddf.materialbintool.main.compiler.BgfxShaderCompiler;
 import com.ddf.materialbintool.main.compiler.Defines;
+import com.ddf.materialbintool.main.util.ByteArrayList;
 import com.ddf.materialbintool.main.util.StringUtil;
 import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
@@ -190,8 +191,16 @@ public class Main {
 			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
 			FileUtil.write(outputFile, buf.toByteArray());
 		} else if (args.diff) {
+			File originalFile = new File(args.original);
+			if (!originalFile.exists() || !originalFile.isFile()) {
+				return;
+			}
 
 		} else if (args.patch) {
+			File originalFile = new File(args.original);
+			if (!originalFile.exists() || !originalFile.isFile()) {
+				return;
+			}
 
 		} else {
 			jCommander.usage();
