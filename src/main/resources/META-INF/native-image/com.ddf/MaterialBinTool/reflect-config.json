@@ -1,0 +1,156 @@
+[
+{
+  "name":"[B"
+},
+{
+  "name":"[F"
+},
+{
+  "name":"[S"
+},
+{
+  "name":"boolean",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.beust.jcommander.converters.BooleanConverter",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"com.beust.jcommander.validators.NoValidator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.beust.jcommander.validators.NoValueValidator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.bgfx.BgfxShader",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.bgfx.BgfxShaderD3D",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.bgfx.Uniform",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.main.Args",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition$Pass",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition$ShaderCode",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.CompiledMaterialDefinition$Variant",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.PlatformShaderStage",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.ShaderCodePlatform",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.ShaderCodeType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.BlendMode",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.EncryptionVariants",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.FlagMode",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.InterpolationConstraint",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.PrecisionConstraint",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.PropertyField",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.SamplerDefinition",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.SamplerDefinition$CustomTypeInfo",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.ShaderInput",
+  "allDeclaredFields":true,
+  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.ShaderInput$Attribute",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.ShaderInput$Type",
+  "allDeclaredFields":true
+},
+{
+  "name":"java.io.Console",
+  "methods":[{"name":"writer","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.System",
+  "methods":[{"name":"console","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.AccessibleObject",
+  "fields":[{"name":"override"}]
+},
+{
+  "name":"java.security.MessageDigestSpi"
+},
+{
+  "name":"sun.misc.Unsafe",
+  "fields":[{"name":"theUnsafe"}],
+  "methods":[
+    {"name":"objectFieldOffset","parameterTypes":["java.lang.reflect.Field"] }, 
+    {"name":"putBoolean","parameterTypes":["java.lang.Object","long","boolean"] }
+  ]
+},
+{
+  "name":"sun.security.provider.SHA2$SHA256",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]
