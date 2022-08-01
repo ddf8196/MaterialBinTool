@@ -1,11 +1,13 @@
 package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBuf;
+import com.google.gson.annotations.SerializedName;
 
 public class ShaderInput {
-    public Type type;
+    public ShaderInputType type;
     public Attribute attribute;
-    public boolean isInstanceData;
+    @SerializedName(value = "isPerInstance", alternate = {"isInstanceData"})
+    public boolean isPerInstance;
 
     public boolean hasPrecisionConstraint;
     public PrecisionConstraint precisionConstraint;
@@ -17,9 +19,9 @@ public class ShaderInput {
     }
 
     public void read(ByteBuf buf) {
-        type = Type.get(buf.readByte());
+        type = ShaderInputType.get(buf.readByte());
         attribute = Attribute.get(buf.readByte(), buf.readByte());
-        isInstanceData = buf.readBoolean();
+        isPerInstance = buf.readBoolean();
 
         hasPrecisionConstraint = buf.readBoolean();
         if (hasPrecisionConstraint) {
@@ -36,7 +38,7 @@ public class ShaderInput {
         buf.writeByte(type.ordinal());
         buf.writeByte(attribute.index);
         buf.writeByte(attribute.subIndex);
-        buf.writeBoolean(isInstanceData);
+        buf.writeBoolean(isPerInstance);
 
         buf.writeBoolean(hasPrecisionConstraint);
         if (hasPrecisionConstraint) {
@@ -54,22 +56,10 @@ public class ShaderInput {
         return "ShaderInput{" +
                 "type=" + type +
                 ", attribute=" + attribute +
-                ", isInstanceData=" + isInstanceData +
+                ", isPerInstance=" + isPerInstance +
                 ", precisionConstraint=" + precisionConstraint +
                 ", interpolationConstraint=" + interpolationConstraint +
                 '}';
-    }
-
-    public enum Type {
-        Float,
-        Vec2,
-        Vec3,
-        Vec4,
-        Unknown1;
-
-        public static Type get(int type) {
-            return Type.values()[type];
-        }
     }
 
     public enum Attribute {

@@ -7,7 +7,7 @@ public enum BlendMode {
     None,
     Replace,
     AlphaBlend,
-    Unknown_3,
+    ColorBlendAlphaAdd,
     PreMultiplied,
     InvertColor,
     Additive,
@@ -27,7 +27,7 @@ public enum BlendMode {
         BlendModeStringMapping.put(None, "None");
         BlendModeStringMapping.put(Replace, "Replace");
         BlendModeStringMapping.put(AlphaBlend, "AlphaBlend");
-
+        BlendModeStringMapping.put(ColorBlendAlphaAdd, "ColorBlendAlphaAdd");
         BlendModeStringMapping.put(PreMultiplied, "PreMultiplied");
         BlendModeStringMapping.put(InvertColor, "InvertColor");
         BlendModeStringMapping.put(Additive, "Additive");
