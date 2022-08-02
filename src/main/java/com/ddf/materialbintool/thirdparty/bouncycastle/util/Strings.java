@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import com.ddf.materialbintool.thirdparty.bouncycastle.util.encoders.UTF8;
 
@@ -275,37 +274,6 @@ public final class Strings
         }
 
         return chars;
-    }
-
-    public static String[] split(String input, char delimiter)
-    {
-        Vector v = new Vector();
-        boolean moreTokens = true;
-        String subString;
-
-        while (moreTokens)
-        {
-            int tokenLocation = input.indexOf(delimiter);
-            if (tokenLocation > 0)
-            {
-                subString = input.substring(0, tokenLocation);
-                v.addElement(subString);
-                input = input.substring(tokenLocation + 1);
-            }
-            else
-            {
-                moreTokens = false;
-                v.addElement(input);
-            }
-        }
-
-        String[] res = new String[v.size()];
-
-        for (int i = 0; i != res.length; i++)
-        {
-            res[i] = (String)v.elementAt(i);
-        }
-        return res;
     }
 
     public static StringList newList()

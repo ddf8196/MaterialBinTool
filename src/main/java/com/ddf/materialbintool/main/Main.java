@@ -189,18 +189,6 @@ public class Main {
 			ByteBuf buf = new ByteBuf();
 			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
 			FileUtil.write(outputFile, buf.toByteArray());
-		} else if (args.diff) {
-			File originalFile = new File(args.original);
-			if (!originalFile.exists() || !originalFile.isFile()) {
-				return;
-			}
-
-		} else if (args.patch) {
-			File originalFile = new File(args.original);
-			if (!originalFile.exists() || !originalFile.isFile()) {
-				return;
-			}
-
 		} else {
 			jCommander.usage();
 		}

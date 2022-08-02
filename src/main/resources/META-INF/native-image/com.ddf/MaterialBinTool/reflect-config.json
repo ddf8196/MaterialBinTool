@@ -89,10 +89,6 @@
   "allDeclaredFields":true
 },
 {
-  "name":"com.ddf.materialbintool.materials.definition.ShaderStage",
-  "allDeclaredFields":true
-},
-{
   "name":"com.ddf.materialbintool.materials.definition.BlendMode",
   "allDeclaredFields":true
 },
@@ -142,6 +138,10 @@
   "allDeclaredFields":true
 },
 {
+  "name":"com.ddf.materialbintool.materials.definition.ShaderStage",
+  "allDeclaredFields":true
+},
+{
   "name":"java.io.Console",
   "methods":[{"name":"writer","parameterTypes":[] }]
 },
@@ -154,29 +154,11 @@
   "fields":[{"name":"override"}]
 },
 {
-  "name":"java.security.MessageDigestSpi"
-},
-{
-  "name":"java.security.SecureRandomParameters"
-},
-{
   "name":"sun.misc.Unsafe",
   "fields":[{"name":"theUnsafe"}],
   "methods":[
     {"name":"objectFieldOffset","parameterTypes":["java.lang.reflect.Field"] }, 
     {"name":"putBoolean","parameterTypes":["java.lang.Object","long","boolean"] }
   ]
-},
-{
-  "name":"sun.security.provider.DRBG",
-  "methods":[{"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
-},
-{
-  "name":"sun.security.provider.SHA",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"sun.security.provider.SHA2$SHA256",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]

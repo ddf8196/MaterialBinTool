@@ -6,9 +6,6 @@ import com.ddf.materialbintool.util.Util;
 import com.google.gson.annotations.SerializedName;
 
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.*;
 
 public class CompiledMaterialDefinition {
@@ -44,14 +41,7 @@ public class CompiledMaterialDefinition {
                 break;
             }
             case SimplePassphrase: {
-                byte[] digest = null;
-                try {
-                    MessageDigest md = MessageDigest.getInstance("SHA-256");
-                    String text = "those are not the shaders you are looking for! ";
-                    digest = md.digest(Base64.getEncoder().encode(text.getBytes(StandardCharsets.UTF_8)));
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
+                byte[] digest = Util.sha256("dGhvc2UgYXJlIG5vdCB0aGUgc2hhZGVycyB5b3UgYXJlIGxvb2tpbmcgZm9yISA=".getBytes(StandardCharsets.UTF_8)); /*those are not the shaders you are looking for! */
                 byte[] key = buf.readByteArrayLE();
                 if (!Arrays.equals(key, digest)) {
                     //???
@@ -122,18 +112,11 @@ public class CompiledMaterialDefinition {
                 return;
             }
             case SimplePassphrase: {
-                byte[] key = null;
-                try {
-                    MessageDigest md = MessageDigest.getInstance("SHA-256");
-                    String text = "those are not the shaders you are looking for! ";
-                    key = md.digest(Base64.getEncoder().encode(text.getBytes(StandardCharsets.UTF_8)));
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
+                byte[] key = Util.sha256("dGhvc2UgYXJlIG5vdCB0aGUgc2hhZGVycyB5b3UgYXJlIGxvb2tpbmcgZm9yISA=".getBytes(StandardCharsets.UTF_8)); /*those are not the shaders you are looking for! */
                 buf.writeByteArrayLE(key);
 
                 byte[] iv = new byte[16];
-                new SecureRandom().nextBytes(iv);
+                new Random().nextBytes(iv);
                 buf.writeByteArrayLE(iv);
 
                 ByteBuf byteBuf = new ByteBuf();

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.ddf.materialbintool'
-version '0.5.1'
+version '0.6.0'
 
 repositories {
     maven {
@@ -20,7 +20,6 @@ repositories {
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'com.beust:jcommander:1.82'
-    implementation 'io.github.java-diff-utils:java-diff-utils:4.12'
 }
 
 shadowJar {

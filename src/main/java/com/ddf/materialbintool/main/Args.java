@@ -38,15 +38,6 @@ public class Args {
     @Parameter(names = {"-e", "--encrypt"})
     public boolean encrypt = false;
 
-    @Parameter(names = "--diff")
-    public boolean diff;
-
-    @Parameter(names = {"--patch"})
-    public boolean patch;
-
-    @Parameter(names = "--original")
-    public String original;
-
     @Parameter(required = true, description = "<file>")
     public String inputPath;
 }

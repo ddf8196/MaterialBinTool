@@ -51,6 +51,7 @@ public class UsageFormatter extends DefaultUsageFormatter {
             Class<?> type = pd.getParameterized().getType();
 
             if (type.isEnum()) {
+                @SuppressWarnings({"unchecked", "rawtypes"})
                 String valueList = EnumSet.allOf((Class<? extends Enum>) type).toString();
 
                 // Prevent duplicate values list, since it is set as 'Options: [values]' if the description
