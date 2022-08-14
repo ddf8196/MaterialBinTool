@@ -100,15 +100,18 @@ public class BgfxShaderCompiler {
             case ESSL_300:
             case ESSL_310:
                 return "android";
+            case Direct3D_SM20_Level_9_1:
+            case Direct3D_SM20_Level_9_2:
+            case Direct3D_SM20_Level_9_3:
+            case Direct3D_SM30:
             case Direct3D_SM40:
             case Direct3D_SM50:
             case Direct3D_SM60:
-            case Direct3D_SM65:
                 return "windows";
             case Metal:
-                return "ios";
+                return "osx";
             case Vulkan:
-                return "vulkan";
+                return "linux";
             default:
                 return "";
         }
@@ -147,22 +150,27 @@ public class BgfxShaderCompiler {
         }
 
         switch (platform) {
+            case Direct3D_SM20_Level_9_1:
+                return prefix + "s_4_0_level_9_1";
+            case Direct3D_SM20_Level_9_2:
+                return prefix + "s_4_0_level_9_2";
+            case Direct3D_SM20_Level_9_3:
+                return prefix + "s_4_0_level_9_3";
+            case Direct3D_SM30:
+                return prefix + "s_3_0";
             case Direct3D_SM40:
                 return prefix + "s_4_0";
             case Direct3D_SM50:
             case Direct3D_SM60:
-            case Direct3D_SM65:
                 return prefix + "s_5_0";
             case GLSL_120:
                 return "120";
             case GLSL_430:
                 return "430";
             case ESSL_100:
-                return "100_es";
             case ESSL_300:
-                return "300_es";
             case ESSL_310:
-                return "310_es";
+                return "";
             case Metal:
                 return "metal";
             case Vulkan:

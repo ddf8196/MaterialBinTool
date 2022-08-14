@@ -2,5 +2,9 @@ package com.ddf.materialbintool.materials.definition;
 
 public enum GraphicsProfile {
     HiDef,
-    LowDef
+    LowDef;
+
+    public static GraphicsProfile get(int i) {
+        return values()[i];
+    }
 }

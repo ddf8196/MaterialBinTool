@@ -2,15 +2,12 @@ package com.ddf.materialbintool.materials;
 
 import com.ddf.materialbintool.materials.definition.ShaderStage;
 import com.ddf.materialbintool.util.ByteBuf;
-import com.google.gson.annotations.SerializedName;
 
 import java.util.Objects;
 
 public class PlatformShaderStage {
-    @SerializedName(value = "stageName", alternate = {"typeName"})
     public String stageName;
     public String platformName;
-    @SerializedName(value = "stage", alternate = {"type"})
     public ShaderStage stage;
     public ShaderCodePlatform platform;
 

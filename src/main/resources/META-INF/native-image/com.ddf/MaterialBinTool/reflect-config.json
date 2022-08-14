@@ -102,6 +102,14 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.ddf.materialbintool.materials.definition.GraphicsProfile",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.InputSemantic",
+  "allDeclaredFields":true
+},
+{
   "name":"com.ddf.materialbintool.materials.definition.InterpolationConstraint",
   "allDeclaredFields":true
 },
@@ -115,6 +123,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.ddf.materialbintool.materials.definition.SamplerAccess",
+  "allDeclaredFields":true
+},
+{
   "name":"com.ddf.materialbintool.materials.definition.SamplerDefinition",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
@@ -125,13 +137,18 @@
   "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.ddf.materialbintool.materials.definition.ShaderInput",
+  "name":"com.ddf.materialbintool.materials.definition.SamplerType",
+  "allDeclaredFields":true
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.SemanticDescription",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.ddf.materialbintool.materials.definition.ShaderInput$Attribute",
-  "allDeclaredFields":true
+  "name":"com.ddf.materialbintool.materials.definition.ShaderInput",
+  "allDeclaredFields":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
   "name":"com.ddf.materialbintool.materials.definition.ShaderInputType",

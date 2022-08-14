@@ -2,10 +2,7 @@ package com.ddf.materialbintool.materials;
 
 import com.ddf.materialbintool.materials.definition.*;
 import com.ddf.materialbintool.util.ByteBuf;
-import com.ddf.materialbintool.util.Util;
-import com.google.gson.annotations.SerializedName;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class CompiledMaterialDefinition {
@@ -13,11 +10,8 @@ public class CompiledMaterialDefinition {
     public static final String COMPILED_MATERIAL_DEFINITION = "RenderDragon.CompiledMaterialDefinition";
 
     private long version;
-    private EncryptionVariants encryptionVariant;
     private String name;
-    @SerializedName(value = "hasParentName", alternate = {"hasName2"})
     private boolean hasParentName;
-    @SerializedName(value = "parentName", alternate = {"name2"})
     private String parentName;
 
     private Map<String, SamplerDefinition> samplerDefinitionMap;
@@ -31,37 +25,10 @@ public class CompiledMaterialDefinition {
 		if (!COMPILED_MATERIAL_DEFINITION.equals(buf.readStringLE()))
 			return;
         version = buf.readLongLE();
-        if (version < 0x16)
-            throw new UnsupportedOperationException("Files with version less than 22 are no longer supported");
+        if (version != 21)
+            throw new UnsupportedOperationException("Only files with version 21 are supported");
 
-        encryptionVariant = EncryptionVariants.getBySignature(buf.readIntLE());
-        switch (encryptionVariant) {
-            case None: {
-				loadContent(buf);
-                break;
-            }
-            case SimplePassphrase: {
-                byte[] digest = Util.sha256("dGhvc2UgYXJlIG5vdCB0aGUgc2hhZGVycyB5b3UgYXJlIGxvb2tpbmcgZm9yISA=".getBytes(StandardCharsets.UTF_8)); /*those are not the shaders you are looking for! */
-                byte[] key = buf.readByteArrayLE();
-                if (!Arrays.equals(key, digest)) {
-                    //???
-                }
-                byte[] iv = buf.readByteArrayLE();
-                byte[] encrypted = buf.readByteArrayLE();
-				ByteBuf decrypted = new ByteBuf(Util.decrypt(key, iv, encrypted));
-				loadContent(decrypted);
-				break;
-            }
-            case KeyPair: {
-                byte[] data = buf.readByteArrayLE();
-                byte[] iv = buf.readByteArrayLE();
-                byte[] encrypted = buf.readByteArrayLE();
-                break;
-            }
-            default: {
-                break;
-            }
-        }
+        loadContent(buf);
     }
 
     private boolean loadContent(ByteBuf buf) {
@@ -100,34 +67,11 @@ public class CompiledMaterialDefinition {
         return end == MAGIC;
     }
 
-    public void saveTo(ByteBuf buf, EncryptionVariants encryptionVariant) {
+    public void saveTo(ByteBuf buf) {
         buf.writeLongLE(MAGIC);
         buf.writeStringLE(COMPILED_MATERIAL_DEFINITION);
         buf.writeLongLE(version);
-        buf.writeIntLE(encryptionVariant.getSignature());
-
-        switch (encryptionVariant) {
-            case None: {
-                saveContent(buf);
-                return;
-            }
-            case SimplePassphrase: {
-                byte[] key = Util.sha256("dGhvc2UgYXJlIG5vdCB0aGUgc2hhZGVycyB5b3UgYXJlIGxvb2tpbmcgZm9yISA=".getBytes(StandardCharsets.UTF_8)); /*those are not the shaders you are looking for! */
-                buf.writeByteArrayLE(key);
-
-                byte[] iv = new byte[16];
-                new Random().nextBytes(iv);
-                buf.writeByteArrayLE(iv);
-
-                ByteBuf byteBuf = new ByteBuf();
-                saveContent(byteBuf);
-
-                buf.writeByteArrayLE(Util.encrypt(key, iv, byteBuf.toByteArray()));
-                return;
-            }
-            case KeyPair:
-                return;
-        }
+        saveContent(buf);
     }
 
     private void saveContent(ByteBuf buf) {
@@ -158,15 +102,10 @@ public class CompiledMaterialDefinition {
     }
 
     public static class Pass {
-        private boolean hasBitSet = false;
-        private String bitSet; //111111111111111 / 011111010111110 / 000000100000000
-        @SerializedName(value = "graphicsProfile", alternate = {"unknownByte0"})
-        private byte graphicsProfile;
+        private GraphicsProfile graphicsProfile;
         private String fallback;  //空字符串 / Fallback / DoCheckerboarding
 
-        @SerializedName(value = "hasDefaultBlendMode", alternate = {"hasBlendMode"})
         private boolean hasDefaultBlendMode;
-        @SerializedName(value = "defaultBlendMode", alternate = {"blendMode"})
         private BlendMode defaultBlendMode;
 
         private Map<String, String> defaultFlagModes;
@@ -176,14 +115,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void read(ByteBuf buf) {
-            hasBitSet = buf.readIntLE() == 15;
-            buf.readerIndex(buf.readerIndex() - 4);
-
-            if (hasBitSet) {
-                bitSet = buf.readStringLE();
-            } else {
-                graphicsProfile = buf.readByte();
-            }
+            graphicsProfile = GraphicsProfile.get(buf.readByte());
             fallback = buf.readStringLE();
 
             hasDefaultBlendMode = buf.readBoolean();
@@ -209,11 +141,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void write(ByteBuf buf) {
-            if (hasBitSet) {
-                buf.writeStringLE(bitSet);
-            } else {
-                buf.writeByte(graphicsProfile);
-            }
+            buf.writeByte(graphicsProfile.ordinal());
             buf.writeStringLE(fallback);
 
             buf.writeBoolean(hasDefaultBlendMode);
@@ -235,7 +163,6 @@ public class CompiledMaterialDefinition {
     }
 
     public static class Variant {
-        @SerializedName(value = "isSupported", alternate = {"unknownBool0"})
         public boolean isSupported;
         public List<FlagMode> flagModeList;
         public transient Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
@@ -281,7 +208,6 @@ public class CompiledMaterialDefinition {
 
     public static class ShaderCode {
         public Map<String, ShaderInput> shaderInputMap;
-        @SerializedName(value = "sourceHash", alternate = {"unknownLong0"})
         public long sourceHash;
         public transient byte[] bgfxShaderData;
 

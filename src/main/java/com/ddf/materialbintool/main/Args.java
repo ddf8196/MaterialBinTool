@@ -17,9 +17,6 @@ public class Args {
     @Parameter(names = {"--raw"})
     public boolean raw;
 
-    @Parameter(names = {"--data-only"})
-    public boolean dataOnly = false;
-
     @Parameter(names = {"-r", "--repack"})
     public boolean repack = false;
 
@@ -34,9 +31,6 @@ public class Args {
 
     @Parameter(names = {"-o", "--output"})
     public String outputPath;
-
-    @Parameter(names = {"-e", "--encrypt"})
-    public boolean encrypt = false;
 
     @Parameter(required = true, description = "<file>")
     public String inputPath;

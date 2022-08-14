@@ -8,5 +8,9 @@ public enum InputSemantic {
     Color,
     Indices,
     Weight,
-    TexCoord,
+    TexCoord;
+
+    public static InputSemantic get(int i) {
+        return values()[i];
+    }
 }

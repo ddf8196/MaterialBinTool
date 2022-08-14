@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.ddf.materialbintool'
-version '0.6.0'
+version '0.6.1-old-version21'
 
 repositories {
     maven {

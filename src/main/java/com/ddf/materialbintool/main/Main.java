@@ -9,7 +9,6 @@ import com.ddf.materialbintool.main.util.StringUtil;
 import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
-import com.ddf.materialbintool.materials.definition.EncryptionVariants;
 import com.ddf.materialbintool.materials.definition.FlagMode;
 import com.ddf.materialbintool.main.util.FileUtil;
 import com.ddf.materialbintool.util.ByteBuf;
@@ -78,7 +77,7 @@ public class Main {
 			System.out.println("Repacking " + outputFile.getName());
 			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
 			ByteBuf buf = new ByteBuf();
-			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
+			cmd.saveTo(buf);
 			FileUtil.write(outputFile, buf.toByteArray());
 		} else if (args.compile) {
 			File jsonFile = getInputJsonFile(inputFile);
@@ -187,7 +186,7 @@ public class Main {
 			}
 
 			ByteBuf buf = new ByteBuf();
-			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
+			cmd.saveTo(buf);
 			FileUtil.write(outputFile, buf.toByteArray());
 		} else {
 			jCommander.usage();
@@ -218,6 +217,7 @@ public class Main {
 		String jarName = "MaterialBinTool.jar";
 		String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 		if (path.endsWith(".jar")) {
+
 			jarName = path.substring(path.lastIndexOf("/") + 1);
 		}
 		return "java -jar " + jarName;
