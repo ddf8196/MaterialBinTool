@@ -164,8 +164,10 @@ public class CompiledMaterialDefinition {
         private byte graphicsProfile;
         private String fallback;  //空字符串 / Fallback / DoCheckerboarding
 
-        private boolean hasBlendMode;
-        private BlendMode blendMode;
+        @SerializedName(value = "hasDefaultBlendMode", alternate = {"hasBlendMode"})
+        private boolean hasDefaultBlendMode;
+        @SerializedName(value = "defaultBlendMode", alternate = {"blendMode"})
+        private BlendMode defaultBlendMode;
 
         private Map<String, String> defaultFlagModes;
         public List<Variant> variantList;
@@ -184,9 +186,9 @@ public class CompiledMaterialDefinition {
             }
             fallback = buf.readStringLE();
 
-            hasBlendMode = buf.readBoolean();
-            if (hasBlendMode) {
-                blendMode = BlendMode.get(buf.readShortLE());
+            hasDefaultBlendMode = buf.readBoolean();
+            if (hasDefaultBlendMode) {
+                defaultBlendMode = BlendMode.get(buf.readShortLE());
             }
 
             short defaultFlagModeCount = buf.readShortLE();
@@ -214,9 +216,9 @@ public class CompiledMaterialDefinition {
             }
             buf.writeStringLE(fallback);
 
-            buf.writeBoolean(hasBlendMode);
-            if (hasBlendMode) {
-                buf.writeShortLE(blendMode.ordinal());
+            buf.writeBoolean(hasDefaultBlendMode);
+            if (hasDefaultBlendMode) {
+                buf.writeShortLE(defaultBlendMode.ordinal());
             }
 
             buf.writeShortLE(defaultFlagModes.size());
