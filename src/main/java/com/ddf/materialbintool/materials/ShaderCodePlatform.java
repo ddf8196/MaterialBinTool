@@ -1,7 +1,6 @@
 package com.ddf.materialbintool.materials;
 
 public enum ShaderCodePlatform {
-    Unknown,
     Direct3D_SM20_Level_9_1,
     Direct3D_SM20_Level_9_2,
     Direct3D_SM20_Level_9_3,

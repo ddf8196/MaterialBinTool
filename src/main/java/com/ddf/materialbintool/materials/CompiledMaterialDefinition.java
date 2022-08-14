@@ -25,8 +25,8 @@ public class CompiledMaterialDefinition {
 		if (!COMPILED_MATERIAL_DEFINITION.equals(buf.readStringLE()))
 			return;
         version = buf.readLongLE();
-        if (version != 21)
-            throw new UnsupportedOperationException("Only files with version 21 are supported");
+        if (version != 19)
+            throw new UnsupportedOperationException("Only files with version 19 are supported");
 
         loadContent(buf);
     }
