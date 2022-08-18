@@ -15,7 +15,6 @@ public class SamplerDefinition {
     public byte type;
     public String textureFormat; //空字符串 / rgba16f / rgba8 / rg16f / r32ui
 
-    public boolean hasUnknownInt;
     public int unknownInt; //1
 
     @SerializedName(value = "hasDefaultTexture", alternate = {"unknownBool1"})
@@ -36,15 +35,7 @@ public class SamplerDefinition {
         allowUnorderedAccess = buf.readBoolean();
         type = buf.readByte();
         textureFormat = buf.readStringLE();
-
-        int unkInt = buf.readIntLE();
-        if (unkInt == 1) {
-            hasUnknownInt = true;
-            unknownInt = unkInt;
-        } else {
-            hasUnknownInt = false;
-            buf.readerIndex(buf.readerIndex() - 4);
-        }
+        unknownInt = buf.readIntLE(); //1
 
         hasDefaultTexture = buf.readBoolean();
         if (hasDefaultTexture) {
@@ -66,10 +57,7 @@ public class SamplerDefinition {
         buf.writeBoolean(allowUnorderedAccess);
         buf.writeByte(type);
         buf.writeStringLE(textureFormat);
-
-        if (hasUnknownInt) {
-            buf.writeIntLE(unknownInt);
-        }
+        buf.writeIntLE(unknownInt);
 
         buf.writeBoolean(hasDefaultTexture);
         if (hasDefaultTexture) {
