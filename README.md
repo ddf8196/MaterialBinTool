@@ -1,6 +1,8 @@
 # MaterialBinTool
 RenderDragon .material.bin文件解包/打包/编译工具
 
+[English README/英文自述文件](README.en-us.md)
+
 ## 使用
 1. 安装Java8或更高版本
 2. 解包: `java -jar MaterialBinTool-0.5.1-all.jar -u material.bin文件路径`   
