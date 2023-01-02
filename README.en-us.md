@@ -33,7 +33,7 @@ Currently supported platforms: ESSL (Android), Direct3D (Win10), Metal (iOS)
 5. Optionally, add the directory where `shaderc.exe` is located to the PATH environment variable
 6. Compile the output directory `java -jar MaterialBinTool-0.5.1-all.jar -c "output directory"`
 
-## The default macro defines the rule
+## The default macro definition rules
 At compile time, some macro definitions will be automatically generated based on the Pass name and Variant's FlagMode, and the default macro definition addition and naming rules are as follows:
 
 1. The current Pass name is underscored in uppercase (Example: `DepthOnlyOpaque -> DEPTH_ONLY_OPAQUE`, `Transparent -> TRANSPARENT`)
