@@ -149,12 +149,13 @@ public class Main {
 
 						for (FlagMode flagMode : variant.flagModeList) {
 							if (flagModesDefines != null && flagModesDefines.has(flagMode.getKey())) {
-								for (JsonElement element : flagModesDefines.getAsJsonArray(flagMode.getKey())) {
-									defines.addDefine(element.getAsString());
+								JsonObject flag = flagModesDefines.getAsJsonObject(flagMode.getKey());
+								if (flag.has(flagMode.getValue())) {
+									for (JsonElement element : flag.getAsJsonArray(flagMode.getValue())) {
+										defines.addDefine(element.getAsString());
+									}
 								}
-								continue;
-							}
-							if ("On".equals(flagMode.getValue())) {
+							} else if ("On".equals(flagMode.getValue())) {
 								defines.addDefine(StringUtil.toUnderScore(flagMode.getKey()));
 							}
 						}
