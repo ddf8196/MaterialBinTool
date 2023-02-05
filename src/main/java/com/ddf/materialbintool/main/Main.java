@@ -137,6 +137,19 @@ public class Main {
 			File fragmentSourceFile = new File(srcDir, name + ".fragment.sc");
 			File computeSourceFile = new File(srcDir, name + ".compute.sc");
 
+			File tmp = new File(srcDir, "varying.def.sc");
+			if (!varyingDefFile.exists() && tmp.exists())
+				varyingDefFile = tmp;
+			tmp = new File(srcDir, "vertex.sc");
+			if (!vertexSourceFile.exists() && tmp.exists())
+				vertexSourceFile = tmp;
+			tmp = new File(srcDir, "fragment.sc");
+			if (!fragmentSourceFile.exists() && tmp.exists())
+				fragmentSourceFile = tmp;
+			tmp = new File(srcDir, "compute.sc");
+			if (!computeSourceFile.exists() && tmp.exists())
+				computeSourceFile = tmp;
+
 			File definesJsonFile = new File(parent, "defines.json");
 			JsonObject passDefines = null;
 			JsonObject flagModeDefines = null;
@@ -158,6 +171,7 @@ public class Main {
 				System.out.println("Error: shaderc not found");
 				return;
 			}
+
 			BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
 			if (args.includePath != null) {
 				for (String p : args.includePath) {
@@ -238,7 +252,84 @@ public class Main {
 		if (args.inputPath.size() < 2) {
 			return;
 		}
+		if (args.outputPath == null) {
+			System.out.println("Error: output directory not specified");
+			return;
+		}
+		File outputDir = new File(args.outputPath);
+		if (!outputDir.exists() && !outputDir.mkdirs()) {
+			System.out.println("Error: failed to create output directory");
+			return;
+		}
+		if (!outputDir.isDirectory()) {
+			System.out.println("Error: output is not a directory");
+			return;
+		}
 
+		String name = null;
+		CompiledMaterialDefinition merged = null;
+		for (String path : args.inputPath) {
+			File inputFile = new File(path);
+			if (!inputFile.exists()) {
+				System.out.println("Error: input file does not exist");
+				return;
+			}
+			if (!inputFile.isFile() || !inputFile.canRead()) {
+				System.out.println("Error: input file not readable");
+				return;
+			}
+
+			System.out.println("Merging " + inputFile.getName());
+
+			JsonObject jsonObject = JsonParser.parseString(FileUtil.readString(inputFile)).getAsJsonObject();
+			boolean dataOnly = jsonObject.has("dataOnly") && jsonObject.get("dataOnly").getAsBoolean();
+			if (!dataOnly) {
+				System.out.println("Error: ");
+				return;
+			}
+
+			CompiledMaterialDefinition cmd = loadDataOnlyJson(jsonObject);
+			if (merged == null) {
+				String fileName = inputFile.getName();
+				name = fileName.substring(0, fileName.lastIndexOf(".json"));
+				merged = cmd;
+				continue;
+			}
+			if (merged.version == cmd.version
+					&& merged.hasParentName == cmd.hasParentName
+					&& merged.encryptionVariant == cmd.encryptionVariant
+					&& Objects.equals(merged.name, cmd.name)
+					&& Objects.equals(merged.parentName, cmd.parentName)
+					&& Objects.equals(merged.samplerDefinitionMap, cmd.samplerDefinitionMap)
+					&& Objects.equals(merged.propertyFieldMap, cmd.propertyFieldMap)
+					&& merged.passMap != null && cmd.passMap != null
+					&& merged.passMap.size() == cmd.passMap.size()) {
+
+				for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : merged.passMap.entrySet()) {
+					CompiledMaterialDefinition.Pass pass1 = passEntry.getValue();
+					CompiledMaterialDefinition.Pass pass2 = cmd.passMap.get(passEntry.getKey());
+
+					if (pass1.hasBitSet == pass2.hasBitSet
+							&& pass1.graphicsProfile == pass2.graphicsProfile
+							&& pass1.hasDefaultBlendMode == pass2.hasDefaultBlendMode
+							&& Objects.equals(pass1.bitSet, pass2.bitSet)
+							&& Objects.equals(pass1.fallback, pass2.fallback)
+							&& pass1.defaultBlendMode == pass2.defaultBlendMode
+							&& Objects.equals(pass1.defaultFlagModes, pass2.defaultFlagModes)
+							&& pass1.variantList != null && pass2.variantList != null) {
+						pass1.variantList.addAll(pass2.variantList);
+					} else {
+						System.out.println("Merge failure: pass " + passEntry.getKey() + " not same");
+						return;
+					}
+				}
+			} else {
+				System.out.println("Merge failure: CompiledMaterialDefinition not same");
+				return;
+			}
+		}
+
+		saveCompiledMaterialDefinition(merged, name, outputDir, false, false, true);
 	}
 
 	public static String findCompilerPath(String compilerPath) {
@@ -435,37 +526,44 @@ public class Main {
     		throw new RuntimeException("");
 		}
 
-    	CompiledMaterialDefinition cmd = GSON.fromJson(jsonObject, CompiledMaterialDefinition.class);
-		cmd.passMap = new LinkedHashMap<>();
 		if (!dataOnly) {
+			CompiledMaterialDefinition cmd = GSON.fromJson(jsonObject, CompiledMaterialDefinition.class);
+			cmd.passMap = new LinkedHashMap<>();
 			JsonArray passes = jsonObject.get("passes").getAsJsonArray();
 			for (int i = 0; i < passes.size(); ++i) {
 				String passName = passes.get(i).getAsString();
 				cmd.passMap.put(passName, loadPass(new File(inputDir, passName + File.separator + passName + ".json"), loadCode, raw));
 			}
+			return cmd;
 		} else {
-			JsonObject passMap = jsonObject.get("passMap").getAsJsonObject();
-			for (Map.Entry<String, JsonElement> entry : passMap.entrySet()) {
-				CompiledMaterialDefinition.Pass pass = GSON.fromJson(entry.getValue(), CompiledMaterialDefinition.Pass.class);
+			return loadDataOnlyJson(jsonObject);
+		}
+	}
 
-				JsonArray variantList = entry.getValue().getAsJsonObject().get("variantList").getAsJsonArray();
-				for (int i = 0; i < pass.variantList.size(); ++i) {
-					CompiledMaterialDefinition.Variant variant = pass.variantList.get(i);
-					variant.shaderCodeMap = new LinkedHashMap<>();
+	private static CompiledMaterialDefinition loadDataOnlyJson(JsonObject json) {
+		CompiledMaterialDefinition cmd = GSON.fromJson(json, CompiledMaterialDefinition.class);
+		cmd.passMap = new LinkedHashMap<>();
+		JsonObject passMap = json.get("passMap").getAsJsonObject();
+		for (Map.Entry<String, JsonElement> entry : passMap.entrySet()) {
+			CompiledMaterialDefinition.Pass pass = GSON.fromJson(entry.getValue(), CompiledMaterialDefinition.Pass.class);
 
-					JsonArray shaderCodes = variantList.get(i).getAsJsonObject().get("shaderCodes").getAsJsonArray();
-					for (int j = 0; j < shaderCodes.size(); ++j) {
-						JsonObject entryJson = shaderCodes.get(j).getAsJsonObject();
+			JsonArray variantList = entry.getValue().getAsJsonObject().get("variantList").getAsJsonArray();
+			for (int i = 0; i < pass.variantList.size(); ++i) {
+				CompiledMaterialDefinition.Variant variant = pass.variantList.get(i);
+				variant.shaderCodeMap = new LinkedHashMap<>();
 
-						PlatformShaderStage platformShaderStage = GSON.fromJson(entryJson.get("platformShaderStage"), PlatformShaderStage.class);
-						CompiledMaterialDefinition.ShaderCode shaderCode = GSON.fromJson(entryJson.get("shaderCode"), CompiledMaterialDefinition.ShaderCode.class);
+				JsonArray shaderCodes = variantList.get(i).getAsJsonObject().get("shaderCodes").getAsJsonArray();
+				for (int j = 0; j < shaderCodes.size(); ++j) {
+					JsonObject entryJson = shaderCodes.get(j).getAsJsonObject();
 
-						variant.shaderCodeMap.put(platformShaderStage, shaderCode);
-					}
+					PlatformShaderStage platformShaderStage = GSON.fromJson(entryJson.get("platformShaderStage"), PlatformShaderStage.class);
+					CompiledMaterialDefinition.ShaderCode shaderCode = GSON.fromJson(entryJson.get("shaderCode"), CompiledMaterialDefinition.ShaderCode.class);
+
+					variant.shaderCodeMap.put(platformShaderStage, shaderCode);
 				}
-
-				cmd.passMap.put(entry.getKey(), pass);
 			}
+
+			cmd.passMap.put(entry.getKey(), pass);
 		}
 		return cmd;
 	}

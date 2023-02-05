@@ -12,16 +12,16 @@ public class CompiledMaterialDefinition {
     public static final long MAGIC = 0xA11DA1A;
     public static final String COMPILED_MATERIAL_DEFINITION = "RenderDragon.CompiledMaterialDefinition";
 
-    private long version;
-    private EncryptionVariants encryptionVariant;
-    private String name;
+    public long version;
+    public EncryptionVariants encryptionVariant;
+    public String name;
     @SerializedName(value = "hasParentName", alternate = {"hasName2"})
-    private boolean hasParentName;
+    public boolean hasParentName;
     @SerializedName(value = "parentName", alternate = {"name2"})
-    private String parentName;
+    public String parentName;
 
-    private Map<String, SamplerDefinition> samplerDefinitionMap;
-    private Map<String, PropertyField> propertyFieldMap;
+    public Map<String, SamplerDefinition> samplerDefinitionMap;
+    public Map<String, PropertyField> propertyFieldMap;
     public transient Map<String, Pass> passMap;
 
     public void loadFrom(ByteBuf buf) {
@@ -157,19 +157,39 @@ public class CompiledMaterialDefinition {
         buf.writeLongLE(MAGIC);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CompiledMaterialDefinition that = (CompiledMaterialDefinition) o;
+        return version == that.version
+                && hasParentName == that.hasParentName
+                && encryptionVariant == that.encryptionVariant
+                && Objects.equals(name, that.name)
+                && Objects.equals(parentName, that.parentName)
+                && Objects.equals(samplerDefinitionMap, that.samplerDefinitionMap)
+                && Objects.equals(propertyFieldMap, that.propertyFieldMap)
+                && Objects.equals(passMap, that.passMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(version, encryptionVariant, name, hasParentName, parentName, samplerDefinitionMap, propertyFieldMap, passMap);
+    }
+
     public static class Pass {
-        private boolean hasBitSet = false;
-        private String bitSet; //111111111111111 / 011111010111110 / 000000100000000
+        public boolean hasBitSet = false;
+        public String bitSet; //111111111111111 / 011111010111110 / 000000100000000
         @SerializedName(value = "graphicsProfile", alternate = {"unknownByte0"})
-        private byte graphicsProfile;
-        private String fallback;  //空字符串 / Fallback / DoCheckerboarding
+        public byte graphicsProfile;
+        public String fallback;  //空字符串 / Fallback / DoCheckerboarding
 
         @SerializedName(value = "hasDefaultBlendMode", alternate = {"hasBlendMode"})
-        private boolean hasDefaultBlendMode;
+        public boolean hasDefaultBlendMode;
         @SerializedName(value = "defaultBlendMode", alternate = {"blendMode"})
-        private BlendMode defaultBlendMode;
+        public BlendMode defaultBlendMode;
 
-        private Map<String, String> defaultFlagModes;
+        public Map<String, String> defaultFlagModes;
         public List<Variant> variantList;
 
         public Pass() {
