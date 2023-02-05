@@ -279,12 +279,12 @@ public class Main {
 				return;
 			}
 
-			System.out.println("Merging " + inputFile.getName());
+			System.out.println("Merging " + inputFile.getAbsolutePath());
 
 			JsonObject jsonObject = JsonParser.parseString(FileUtil.readString(inputFile)).getAsJsonObject();
 			boolean dataOnly = jsonObject.has("dataOnly") && jsonObject.get("dataOnly").getAsBoolean();
 			if (!dataOnly) {
-				System.out.println("Error: ");
+				System.out.println("Error: not dataOnly");
 				return;
 			}
 
@@ -300,7 +300,8 @@ public class Main {
 					&& merged.encryptionVariant == cmd.encryptionVariant
 					&& Objects.equals(merged.name, cmd.name)
 					&& Objects.equals(merged.parentName, cmd.parentName)
-					&& Objects.equals(merged.samplerDefinitionMap, cmd.samplerDefinitionMap)
+//					&& Objects.equals(merged.samplerDefinitionMap, cmd.samplerDefinitionMap)
+					&& Objects.equals(merged.samplerDefinitionMap.keySet(), cmd.samplerDefinitionMap.keySet())
 					&& Objects.equals(merged.propertyFieldMap, cmd.propertyFieldMap)
 					&& merged.passMap != null && cmd.passMap != null
 					&& merged.passMap.size() == cmd.passMap.size()) {
@@ -518,12 +519,12 @@ public class Main {
 	}
 
 	public static CompiledMaterialDefinition loadCompiledMaterialDefinition(File jsonFile, boolean loadCode, boolean raw, boolean canDataOnly) {
-    	File inputDir = jsonFile.getParentFile();
-    	JsonObject jsonObject = JsonParser.parseString(FileUtil.readString(jsonFile)).getAsJsonObject();
+		File inputDir = jsonFile.getParentFile();
+		JsonObject jsonObject = JsonParser.parseString(FileUtil.readString(jsonFile)).getAsJsonObject();
 
-    	boolean dataOnly = jsonObject.has("dataOnly") && jsonObject.get("dataOnly").getAsBoolean();
-    	if (dataOnly && !canDataOnly) {
-    		throw new RuntimeException("");
+		boolean dataOnly = jsonObject.has("dataOnly") && jsonObject.get("dataOnly").getAsBoolean();
+		if (dataOnly && !canDataOnly) {
+			throw new RuntimeException("Cannot be dataOnly");
 		}
 
 		if (!dataOnly) {
