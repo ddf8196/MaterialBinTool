@@ -3,7 +3,6 @@ package com.ddf.materialbintool.materials;
 import com.ddf.materialbintool.materials.definition.*;
 import com.ddf.materialbintool.util.ByteBuf;
 import com.ddf.materialbintool.util.Util;
-import com.google.gson.annotations.SerializedName;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -15,9 +14,7 @@ public class CompiledMaterialDefinition {
     public long version;
     public EncryptionVariants encryptionVariant;
     public String name;
-    @SerializedName(value = "hasParentName", alternate = {"hasName2"})
     public boolean hasParentName;
-    @SerializedName(value = "parentName", alternate = {"name2"})
     public String parentName;
 
     public Map<String, SamplerDefinition> samplerDefinitionMap;
@@ -178,15 +175,10 @@ public class CompiledMaterialDefinition {
     }
 
     public static class Pass {
-        public boolean hasBitSet = false;
         public String bitSet; //111111111111111 / 011111010111110 / 000000100000000
-        @SerializedName(value = "graphicsProfile", alternate = {"unknownByte0"})
-        public byte graphicsProfile;
         public String fallback;  //空字符串 / Fallback / DoCheckerboarding
 
-        @SerializedName(value = "hasDefaultBlendMode", alternate = {"hasBlendMode"})
         public boolean hasDefaultBlendMode;
-        @SerializedName(value = "defaultBlendMode", alternate = {"blendMode"})
         public BlendMode defaultBlendMode;
 
         public Map<String, String> defaultFlagModes;
@@ -196,14 +188,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void read(ByteBuf buf) {
-            hasBitSet = buf.readIntLE() == 15;
-            buf.readerIndex(buf.readerIndex() - 4);
-
-            if (hasBitSet) {
-                bitSet = buf.readStringLE();
-            } else {
-                graphicsProfile = buf.readByte();
-            }
+            bitSet = buf.readStringLE();
             fallback = buf.readStringLE();
 
             hasDefaultBlendMode = buf.readBoolean();
@@ -229,11 +214,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void write(ByteBuf buf) {
-            if (hasBitSet) {
-                buf.writeStringLE(bitSet);
-            } else {
-                buf.writeByte(graphicsProfile);
-            }
+            buf.writeStringLE(bitSet);
             buf.writeStringLE(fallback);
 
             buf.writeBoolean(hasDefaultBlendMode);
@@ -258,9 +239,7 @@ public class CompiledMaterialDefinition {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Pass pass = (Pass) o;
-            return hasBitSet == pass.hasBitSet
-                    && graphicsProfile == pass.graphicsProfile
-                    && hasDefaultBlendMode == pass.hasDefaultBlendMode
+            return hasDefaultBlendMode == pass.hasDefaultBlendMode
                     && Objects.equals(bitSet, pass.bitSet)
                     && Objects.equals(fallback, pass.fallback)
                     && defaultBlendMode == pass.defaultBlendMode
@@ -270,12 +249,11 @@ public class CompiledMaterialDefinition {
 
         @Override
         public int hashCode() {
-            return Objects.hash(hasBitSet, bitSet, graphicsProfile, fallback, hasDefaultBlendMode, defaultBlendMode, defaultFlagModes, variantList);
+            return Objects.hash(bitSet, fallback, hasDefaultBlendMode, defaultBlendMode, defaultFlagModes, variantList);
         }
     }
 
     public static class Variant {
-        @SerializedName(value = "isSupported", alternate = {"unknownBool0"})
         public boolean isSupported;
         public List<FlagMode> flagModeList;
         public transient Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
@@ -334,7 +312,6 @@ public class CompiledMaterialDefinition {
 
     public static class ShaderCode {
         public Map<String, ShaderInput> shaderInputMap;
-        @SerializedName(value = "sourceHash", alternate = {"unknownLong0"})
         public long sourceHash;
         public transient byte[] bgfxShaderData;
 

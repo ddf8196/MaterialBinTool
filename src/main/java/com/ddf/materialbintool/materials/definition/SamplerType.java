@@ -7,7 +7,10 @@ public enum SamplerType {
     Type3D,
     TypeCube,
     TypeStructuredBuffer,
-    TypeRawBuffer;
+    TypeRawBuffer,
+    TypeAccelerationStructure,
+    Type2DShadow,
+    Type2DArrayShadow;
 
     public static SamplerType get(int i) {
         return values()[i];

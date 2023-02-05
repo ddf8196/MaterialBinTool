@@ -310,9 +310,7 @@ public class Main {
 					CompiledMaterialDefinition.Pass pass1 = passEntry.getValue();
 					CompiledMaterialDefinition.Pass pass2 = cmd.passMap.get(passEntry.getKey());
 
-					if (pass1.hasBitSet == pass2.hasBitSet
-							&& pass1.graphicsProfile == pass2.graphicsProfile
-							&& pass1.hasDefaultBlendMode == pass2.hasDefaultBlendMode
+					if (pass1.hasDefaultBlendMode == pass2.hasDefaultBlendMode
 							&& Objects.equals(pass1.bitSet, pass2.bitSet)
 							&& Objects.equals(pass1.fallback, pass2.fallback)
 							&& pass1.defaultBlendMode == pass2.defaultBlendMode

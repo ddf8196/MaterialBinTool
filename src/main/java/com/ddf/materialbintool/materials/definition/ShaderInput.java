@@ -1,12 +1,10 @@
 package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBuf;
-import com.google.gson.annotations.SerializedName;
 
 public class ShaderInput {
     public ShaderInputType type;
     public Attribute attribute;
-    @SerializedName(value = "isPerInstance", alternate = {"isInstanceData"})
     public boolean isPerInstance;
 
     public boolean hasPrecisionConstraint;
