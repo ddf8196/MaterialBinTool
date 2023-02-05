@@ -43,27 +43,51 @@ public class Main {
 			return;
 		}
 
-		File inputFile = new File(args.inputPath);
-		if (!inputFile.exists()) {
-			System.out.println("Error: input file does not exist");
-			return;
-		}
-
 		if (args.unpack) {
+			unpack(args);
+		} else if (args.repack) {
+			repack(args);
+		} else if (args.compile) {
+			compile(args);
+		} else if (args.mergeData) {
+			mergeData(args);
+		} else {
+			jCommander.usage();
+		}
+    }
+
+	private static void unpack(Args args) {
+		for (String path : args.inputPath) {
+			File inputFile = new File(path);
+			if (!inputFile.exists()) {
+				System.out.println("Error: input file does not exist");
+				continue;
+			}
+
 			if (inputFile.isFile() && inputFile.getName().endsWith(".material.bin")) {
 				System.out.println("Unpacking " + inputFile.getName());
-				unpack(inputFile, args.outputPath, args.addFlagModesToCode, args.raw);
+				unpack(inputFile, args.outputPath, args.addFlagModesToCode, args.raw, args.dataOnly);
 			} else if (inputFile.isDirectory()) {
 				for (File file : inputFile.listFiles()) {
 					if (file.getName().endsWith(".material.bin")) {
 						System.out.println("Unpacking " + file.getName());
-						unpack(file, args.outputPath, args.addFlagModesToCode, args.raw);
+						unpack(file, args.outputPath, args.addFlagModesToCode, args.raw, args.dataOnly);
 					}
 				}
 			} else {
 				System.out.println("Error: the input file is not a .material.bin file or directory");
 			}
-		} else if (args.repack) {
+		}
+	}
+
+	private static void repack(Args args) {
+		for (String path : args.inputPath) {
+			File inputFile = new File(path);
+			if (!inputFile.exists()) {
+				System.out.println("Error: input file does not exist");
+				continue;
+			}
+
 			File jsonFile = getInputJsonFile(inputFile);
 			File outputFile = getRepackOutputFile(inputFile, args.outputPath);
 			if (jsonFile == null) {
@@ -76,11 +100,22 @@ public class Main {
 			}
 
 			System.out.println("Repacking " + outputFile.getName());
-			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
+			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw, false);
 			ByteBuf buf = new ByteBuf();
 			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
 			FileUtil.write(outputFile, buf.toByteArray());
-		} else if (args.compile) {
+		}
+	}
+
+	private static void compile(Args args) {
+		loop:
+		for (String path : args.inputPath) {
+			File inputFile = new File(path);
+			if (!inputFile.exists()) {
+				System.out.println("Error: input file does not exist");
+				continue;
+			}
+
 			File jsonFile = getInputJsonFile(inputFile);
 			File outputFile = getRepackOutputFile(inputFile, args.outputPath);
 			if (jsonFile == null) {
@@ -103,14 +138,19 @@ public class Main {
 			File computeSourceFile = new File(srcDir, name + ".compute.sc");
 
 			File definesJsonFile = new File(parent, "defines.json");
-			JsonObject passesDefines = null;
-			JsonObject flagModesDefines = null;
+			JsonObject passDefines = null;
+			JsonObject flagModeDefines = null;
 			if (definesJsonFile.exists()) {
 				JsonObject definesJson = JsonParser.parseString(FileUtil.readString(definesJsonFile)).getAsJsonObject();
-				if (definesJson.has("passes"))
-					passesDefines = definesJson.getAsJsonObject("passes");
-				if (definesJson.has("flagModes"))
-					flagModesDefines = definesJson.getAsJsonObject("flagModes");
+				if (definesJson.has("pass"))
+					passDefines = definesJson.getAsJsonObject("pass");
+				else if (definesJson.has("passes"))
+					passDefines = definesJson.getAsJsonObject("passes");
+
+				if (definesJson.has("flagMode"))
+					flagModeDefines = definesJson.getAsJsonObject("flagMode");
+				else if (definesJson.has("flagModes"))
+					flagModeDefines = definesJson.getAsJsonObject("flagModes");
 			}
 
 			String compilerPath = findCompilerPath(args.shaderCompilerPath);
@@ -120,27 +160,26 @@ public class Main {
 			}
 			BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
 			if (args.includePath != null) {
-				for (String path : args.includePath) {
-					compiler.addIncludePath(path);
+				for (String p : args.includePath) {
+					compiler.addIncludePath(p);
 				}
 			}
-			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw);
+			compiler.setDebug(args.debug);
+
+			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, false, args.raw, true);
 			for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
 				String passName = passEntry.getKey();
 				System.out.println("Compiling " + passName);
 				for (CompiledMaterialDefinition.Variant variant : passEntry.getValue().variantList) {
-					Iterator<Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode>> iterator = variant.shaderCodeMap.entrySet().iterator();
-					while (iterator.hasNext()) {
-						Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode> entry = iterator.next();
-
+					for (Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode> entry : variant.shaderCodeMap.entrySet()) {
 						PlatformShaderStage platformShaderStage = entry.getKey();
 						CompiledMaterialDefinition.ShaderCode shaderCode = entry.getValue();
 
 						Defines defines = new Defines();
 						defines.addDefine("BGFX_CONFIG_MAX_BONES", "4");
 
-						if (passesDefines != null && passesDefines.has(passName)) {
-							for (JsonElement element : passesDefines.getAsJsonArray(passName)) {
+						if (passDefines != null && passDefines.has(passName)) {
+							for (JsonElement element : passDefines.getAsJsonArray(passName)) {
 								defines.addDefine(element.getAsString());
 							}
 						} else {
@@ -148,8 +187,8 @@ public class Main {
 						}
 
 						for (FlagMode flagMode : variant.flagModeList) {
-							if (flagModesDefines != null && flagModesDefines.has(flagMode.getKey())) {
-								JsonObject flag = flagModesDefines.getAsJsonObject(flagMode.getKey());
+							if (flagModeDefines != null && flagModeDefines.has(flagMode.getKey())) {
+								JsonObject flag = flagModeDefines.getAsJsonObject(flagMode.getKey());
 								if (flag.has(flagMode.getValue())) {
 									for (JsonElement element : flag.getAsJsonArray(flagMode.getValue())) {
 										defines.addDefine(element.getAsString());
@@ -159,6 +198,8 @@ public class Main {
 								defines.addDefine(StringUtil.toUnderScore(flagMode.getKey()));
 							}
 						}
+
+						defines.addDefine(StringUtil.toUnderScore(name));
 
 						File input;
 						switch (platformShaderStage.stage) {
@@ -179,9 +220,9 @@ public class Main {
 						byte[] compiled = compiler.compile(input, varyingDefFile, defines, platformShaderStage.platform, platformShaderStage.stage);
 						if (compiled != null) {
 							shaderCode.bgfxShaderData = compiled;
-						}
-						if (shaderCode.bgfxShaderData == null) {
-							iterator.remove();
+						} else {
+							System.out.println("Compilation failure");
+							continue loop;
 						}
 					}
 				}
@@ -190,10 +231,15 @@ public class Main {
 			ByteBuf buf = new ByteBuf();
 			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
 			FileUtil.write(outputFile, buf.toByteArray());
-		} else {
-			jCommander.usage();
 		}
-    }
+	}
+
+	private static void mergeData(Args args) {
+		if (args.inputPath.size() < 2) {
+			return;
+		}
+
+	}
 
 	public static String findCompilerPath(String compilerPath) {
 		if (compilerPath != null) {
@@ -264,7 +310,7 @@ public class Main {
 		}
 	}
 
-	public static void unpack(File inputFile, String outputDirPath, boolean addFlagModesToCode, boolean raw) {
+	public static void unpack(File inputFile, String outputDirPath, boolean addFlagModesToCode, boolean raw, boolean dataOnly) {
 		ByteBuf buf = new ByteBuf(FileUtil.readAllBytes(inputFile));
 		CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
 		cmd.loadFrom(buf);
@@ -272,21 +318,52 @@ public class Main {
 		String fileName = inputFile.getName();
 		String name = fileName.substring(0, fileName.indexOf(".material.bin"));
 		File outputFile = outputDirPath != null ? new File(outputDirPath, name) : new File(inputFile.getParentFile(), name);
-		saveCompiledMaterialDefinition(cmd, name, outputFile, addFlagModesToCode, raw);
+		saveCompiledMaterialDefinition(cmd, name, outputFile, addFlagModesToCode, raw, dataOnly);
 	}
 
-	public static void saveCompiledMaterialDefinition(CompiledMaterialDefinition cmd, String name, File outputDir, boolean addFlagModesToCode, boolean raw) {
+	public static void saveCompiledMaterialDefinition(CompiledMaterialDefinition cmd, String name, File outputDir, boolean addFlagModesToCode, boolean raw, boolean dataOnly) {
     	if (!outputDir.exists() && !outputDir.mkdirs())
     		return;
 
 		JsonObject jsonObject = GSON.toJsonTree(cmd).getAsJsonObject();
-		JsonArray passes = new JsonArray();
-		for (Map.Entry<String, CompiledMaterialDefinition.Pass> entry : cmd.passMap.entrySet()) {
-			String passName = entry.getKey();
-			savePass(entry.getValue(), passName, new File(outputDir, passName), addFlagModesToCode, raw);
-			passes.add(passName);
+		if (!dataOnly) {
+			JsonArray passes = new JsonArray();
+			for (Map.Entry<String, CompiledMaterialDefinition.Pass> entry : cmd.passMap.entrySet()) {
+				String passName = entry.getKey();
+				savePass(entry.getValue(), passName, new File(outputDir, passName), addFlagModesToCode, raw);
+				passes.add(passName);
+			}
+			jsonObject.add("passes", passes);
+		} else {
+			jsonObject.addProperty("dataOnly", true);
+			JsonObject passMapJson = GSON.toJsonTree(cmd.passMap).getAsJsonObject();
+			for (Map.Entry<String, CompiledMaterialDefinition.Pass> entry : cmd.passMap.entrySet()) {
+				CompiledMaterialDefinition.Pass pass = entry.getValue();
+				JsonObject passJson = passMapJson.get(entry.getKey()).getAsJsonObject();
+				JsonArray variantListJson = passJson.getAsJsonArray("variantList");
+				for (int i = 0; i < pass.variantList.size(); ++i) {
+					CompiledMaterialDefinition.Variant variant = pass.variantList.get(i);
+					JsonObject variantJson = variantListJson.get(i).getAsJsonObject();
+
+					JsonArray shaderCodesJson = new JsonArray();
+					for (Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode> entry1 : variant.shaderCodeMap.entrySet()) {
+						JsonObject entryJson = new JsonObject();
+
+						PlatformShaderStage platformShaderStage = entry1.getKey();
+						entryJson.add("platformShaderStage", GSON.toJsonTree(platformShaderStage));
+
+						CompiledMaterialDefinition.ShaderCode shaderCode = entry1.getValue();
+						entryJson.add("shaderCode", GSON.toJsonTree(shaderCode));
+
+						shaderCodesJson.add(entryJson);
+					}
+
+					variantJson.add("shaderCodes", shaderCodesJson);
+				}
+			}
+
+			jsonObject.add("passMap", passMapJson);
 		}
-		jsonObject.add("passes", passes);
 
 		FileUtil.writeString(new File(outputDir, name + ".json"), GSON.toJson(jsonObject));
 	}
@@ -349,16 +426,46 @@ public class Main {
 		FileUtil.writeString(new File(outputDir, passName + ".json"), GSON.toJson(jsonObject));
 	}
 
-	public static CompiledMaterialDefinition loadCompiledMaterialDefinition(File jsonFile, boolean loadCode, boolean raw) {
+	public static CompiledMaterialDefinition loadCompiledMaterialDefinition(File jsonFile, boolean loadCode, boolean raw, boolean canDataOnly) {
     	File inputDir = jsonFile.getParentFile();
-    	JsonElement jsonElement = JsonParser.parseString(FileUtil.readString(jsonFile));
-    	CompiledMaterialDefinition cmd = GSON.fromJson(jsonElement, CompiledMaterialDefinition.class);
-    	cmd.passMap = new LinkedHashMap<>();
+    	JsonObject jsonObject = JsonParser.parseString(FileUtil.readString(jsonFile)).getAsJsonObject();
 
-    	JsonArray passes = jsonElement.getAsJsonObject().get("passes").getAsJsonArray();
-    	for (int i = 0; i < passes.size(); ++i) {
-    		String passName = passes.get(i).getAsString();
-    		cmd.passMap.put(passName, loadPass(new File(inputDir, passName + File.separator + passName + ".json"), loadCode, raw));
+    	boolean dataOnly = jsonObject.has("dataOnly") && jsonObject.get("dataOnly").getAsBoolean();
+    	if (dataOnly && !canDataOnly) {
+    		throw new RuntimeException("");
+		}
+
+    	CompiledMaterialDefinition cmd = GSON.fromJson(jsonObject, CompiledMaterialDefinition.class);
+		cmd.passMap = new LinkedHashMap<>();
+		if (!dataOnly) {
+			JsonArray passes = jsonObject.get("passes").getAsJsonArray();
+			for (int i = 0; i < passes.size(); ++i) {
+				String passName = passes.get(i).getAsString();
+				cmd.passMap.put(passName, loadPass(new File(inputDir, passName + File.separator + passName + ".json"), loadCode, raw));
+			}
+		} else {
+			JsonObject passMap = jsonObject.get("passMap").getAsJsonObject();
+			for (Map.Entry<String, JsonElement> entry : passMap.entrySet()) {
+				CompiledMaterialDefinition.Pass pass = GSON.fromJson(entry.getValue(), CompiledMaterialDefinition.Pass.class);
+
+				JsonArray variantList = entry.getValue().getAsJsonObject().get("variantList").getAsJsonArray();
+				for (int i = 0; i < pass.variantList.size(); ++i) {
+					CompiledMaterialDefinition.Variant variant = pass.variantList.get(i);
+					variant.shaderCodeMap = new LinkedHashMap<>();
+
+					JsonArray shaderCodes = variantList.get(i).getAsJsonObject().get("shaderCodes").getAsJsonArray();
+					for (int j = 0; j < shaderCodes.size(); ++j) {
+						JsonObject entryJson = shaderCodes.get(j).getAsJsonObject();
+
+						PlatformShaderStage platformShaderStage = GSON.fromJson(entryJson.get("platformShaderStage"), PlatformShaderStage.class);
+						CompiledMaterialDefinition.ShaderCode shaderCode = GSON.fromJson(entryJson.get("shaderCode"), CompiledMaterialDefinition.ShaderCode.class);
+
+						variant.shaderCodeMap.put(platformShaderStage, shaderCode);
+					}
+				}
+
+				cmd.passMap.put(entry.getKey(), pass);
+			}
 		}
 		return cmd;
 	}

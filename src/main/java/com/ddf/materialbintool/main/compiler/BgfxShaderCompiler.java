@@ -15,6 +15,7 @@ public class BgfxShaderCompiler {
     private final Random random = new Random();
     private final String compilerPath;
     private final List<String> includePaths = new ArrayList<>();
+    private boolean debug = false;
     private final File tempDir;
 
     public BgfxShaderCompiler(String compilerPath) {
@@ -24,6 +25,14 @@ public class BgfxShaderCompiler {
 
     public void addIncludePath(String includePath) {
         includePaths.add(includePath);
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
     public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderStage type) {
@@ -63,12 +72,15 @@ public class BgfxShaderCompiler {
         command.add("--profile");
         command.add(toProfileString(platform, stage));
 
+        command.add("-O 3");
+
         for (String includePath : includePaths) {
             command.add("-i");
             command.add(includePath);
         }
 
-        command.add("-O 3");
+        if (debug)
+            command.add("--debug");
 
         try {
             Process process = new ProcessBuilder()

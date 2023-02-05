@@ -7,7 +7,7 @@ public class Defines {
     private Map<String, String> defines = new LinkedHashMap<>();
 
     public void addDefine(String key) {
-        defines.put(key, "");
+        defines.put(key, "1");
     }
 
     public void addDefine(String key, String value) {

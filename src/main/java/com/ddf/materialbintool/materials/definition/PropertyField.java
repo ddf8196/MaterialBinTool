@@ -2,6 +2,9 @@ package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBuf;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class PropertyField {
     private int num;
     private short type;
@@ -80,5 +83,21 @@ public class PropertyField {
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PropertyField that = (PropertyField) o;
+        return num == that.num && type == that.type && hasData == that.hasData && Arrays.equals(vectorData, that.vectorData) && Arrays.equals(matrixData, that.matrixData);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(num, type, hasData);
+        result = 31 * result + Arrays.hashCode(vectorData);
+        result = 31 * result + Arrays.hashCode(matrixData);
+        return result;
     }
 }

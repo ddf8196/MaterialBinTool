@@ -232,6 +232,26 @@ public class CompiledMaterialDefinition {
                 variant.write(buf);
             }
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Pass pass = (Pass) o;
+            return hasBitSet == pass.hasBitSet
+                    && graphicsProfile == pass.graphicsProfile
+                    && hasDefaultBlendMode == pass.hasDefaultBlendMode
+                    && Objects.equals(bitSet, pass.bitSet)
+                    && Objects.equals(fallback, pass.fallback)
+                    && defaultBlendMode == pass.defaultBlendMode
+                    && Objects.equals(defaultFlagModes, pass.defaultFlagModes)
+                    && Objects.equals(variantList, pass.variantList);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(hasBitSet, bitSet, graphicsProfile, fallback, hasDefaultBlendMode, defaultBlendMode, defaultFlagModes, variantList);
+        }
     }
 
     public static class Variant {
@@ -277,6 +297,19 @@ public class CompiledMaterialDefinition {
                 entry.getValue().write(buf);
             }
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Variant variant = (Variant) o;
+            return isSupported == variant.isSupported && Objects.equals(flagModeList, variant.flagModeList) && Objects.equals(shaderCodeMap, variant.shaderCodeMap);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(isSupported, flagModeList, shaderCodeMap);
+        }
     }
 
     public static class ShaderCode {
@@ -309,6 +342,21 @@ public class CompiledMaterialDefinition {
             }
             buf.writeLong(sourceHash);
             buf.writeByteArrayLE(bgfxShaderData);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ShaderCode that = (ShaderCode) o;
+            return sourceHash == that.sourceHash && Objects.equals(shaderInputMap, that.shaderInputMap) && Arrays.equals(bgfxShaderData, that.bgfxShaderData);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Objects.hash(shaderInputMap, sourceHash);
+            result = 31 * result + Arrays.hashCode(bgfxShaderData);
+            return result;
         }
     }
 }

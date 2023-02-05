@@ -2,6 +2,8 @@ package com.ddf.materialbintool.materials.definition;
 
 import com.ddf.materialbintool.util.ByteBuf;
 
+import java.util.Objects;
+
 public class FlagMode {
     private String key;
     private String value;
@@ -33,6 +35,19 @@ public class FlagMode {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FlagMode flagMode = (FlagMode) o;
+        return Objects.equals(key, flagMode.key) && Objects.equals(value, flagMode.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value);
     }
 
     @Override

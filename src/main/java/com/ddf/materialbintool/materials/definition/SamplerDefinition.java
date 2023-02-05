@@ -3,6 +3,8 @@ package com.ddf.materialbintool.materials.definition;
 import com.ddf.materialbintool.util.ByteBuf;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Objects;
+
 public class SamplerDefinition {
     public byte reg;
     @SerializedName(value = "access", alternate = {"unknownByte1"})
@@ -71,11 +73,47 @@ public class SamplerDefinition {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SamplerDefinition that = (SamplerDefinition) o;
+        return reg == that.reg
+                && access == that.access
+                && precision == that.precision
+                && allowUnorderedAccess == that.allowUnorderedAccess
+                && type == that.type
+                && unknownInt == that.unknownInt
+                && hasDefaultTexture == that.hasDefaultTexture
+                && hasCustomTypeInfo == that.hasCustomTypeInfo
+                && Objects.equals(textureFormat, that.textureFormat)
+                && Objects.equals(defaultTexture, that.defaultTexture)
+                && Objects.equals(customTypeInfo, that.customTypeInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(reg, access, precision, allowUnorderedAccess, type, textureFormat, unknownInt, hasDefaultTexture, defaultTexture, hasCustomTypeInfo, customTypeInfo);
+    }
+
     public static class CustomTypeInfo {
         @SerializedName(value = "name", alternate = {"unknownStr"})
         public String name;
 
         @SerializedName(value = "size", alternate = {"unknownInt"})
         public int size;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CustomTypeInfo that = (CustomTypeInfo) o;
+            return size == that.size && Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, size);
+        }
     }
 }

@@ -29,8 +29,14 @@ public class Args {
     @Parameter(names = {"-s", "--shaderc"})
     public String shaderCompilerPath;
 
-    @Parameter(names = {"-i", "--include"}, variableArity = true)
+    @Parameter(names = {"-i", "--include"})
     public List<String> includePath;
+
+    @Parameter(names = {"--debug"})
+    public boolean debug = false;
+
+    @Parameter(names = {"-m", "--merge-data"})
+    public boolean mergeData = false;
 
     @Parameter(names = {"-o", "--output"})
     public String outputPath;
@@ -38,6 +44,6 @@ public class Args {
     @Parameter(names = {"-e", "--encrypt"})
     public boolean encrypt = false;
 
-    @Parameter(required = true, description = "<file>")
-    public String inputPath;
+    @Parameter(required = true, description = "files", variableArity = true)
+    public List<String> inputPath;
 }
