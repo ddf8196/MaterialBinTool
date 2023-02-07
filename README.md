@@ -13,7 +13,7 @@ java -jar MaterialBinTool-0.5.1-all.jar [选项] <输入文件或目录>
 所有选项:
   -u, --unpack        解包输入的.material.bin文件或输入目录中的全部.material.bin文件
   -a, --add-flagmodes 将Variant的FlagMode以注释形式添加至输出的着色器文件前(仅ESSL和GLSL平台有效)
-  -d, --data-only     仅输出不包含着色器的json(不可打包,仅可用于合并和编译)
+  --data-only         仅输出不包含着色器的json(不可打包,仅可用于合并和编译)
   -r, --repack        打包输入目录或json文件为.material.bin文件
   --raw               输出/输入原始bgfx着色器文件而不是仅着色器代码
   -c, --compile       编译输入目录或json文件为.material.bin文件
