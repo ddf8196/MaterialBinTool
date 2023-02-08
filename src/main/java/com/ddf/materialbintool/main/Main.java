@@ -10,7 +10,6 @@ import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
 import com.ddf.materialbintool.materials.definition.EncryptionVariants;
-import com.ddf.materialbintool.materials.definition.FlagMode;
 import com.ddf.materialbintool.main.util.FileUtil;
 import com.ddf.materialbintool.util.ByteBuf;
 import com.google.gson.*;
@@ -66,12 +65,12 @@ public class Main {
 
 			if (inputFile.isFile() && inputFile.getName().endsWith(".material.bin")) {
 				System.out.println("Unpacking " + inputFile.getName());
-				unpack(inputFile, args.outputPath, args.addFlagModesToCode, args.raw, args.dataOnly);
+				unpack(inputFile, args.outputPath, args.addFlagsToCode, args.raw, args.dataOnly);
 			} else if (inputFile.isDirectory()) {
 				for (File file : inputFile.listFiles()) {
 					if (file.getName().endsWith(".material.bin")) {
 						System.out.println("Unpacking " + file.getName());
-						unpack(file, args.outputPath, args.addFlagModesToCode, args.raw, args.dataOnly);
+						unpack(file, args.outputPath, args.addFlagsToCode, args.raw, args.dataOnly);
 					}
 				}
 			} else {
@@ -152,7 +151,7 @@ public class Main {
 
 			File definesJsonFile = new File(parent, "defines.json");
 			JsonObject passDefines = null;
-			JsonObject flagModeDefines = null;
+			JsonObject flagDefines = null;
 			if (definesJsonFile.exists()) {
 				JsonObject definesJson = JsonParser.parseString(FileUtil.readString(definesJsonFile)).getAsJsonObject();
 				if (definesJson.has("pass"))
@@ -160,10 +159,10 @@ public class Main {
 				else if (definesJson.has("passes"))
 					passDefines = definesJson.getAsJsonObject("passes");
 
-				if (definesJson.has("flagMode"))
-					flagModeDefines = definesJson.getAsJsonObject("flagMode");
-				else if (definesJson.has("flagModes"))
-					flagModeDefines = definesJson.getAsJsonObject("flagModes");
+				if (definesJson.has("flag"))
+					flagDefines = definesJson.getAsJsonObject("flag");
+				if (definesJson.has("flags"))
+					flagDefines = definesJson.getAsJsonObject("flags");
 			}
 
 			String compilerPath = findCompilerPath(args.shaderCompilerPath);
@@ -200,16 +199,16 @@ public class Main {
 							defines.addDefine(StringUtil.toUnderScore(passName));
 						}
 
-						for (FlagMode flagMode : variant.flagModeList) {
-							if (flagModeDefines != null && flagModeDefines.has(flagMode.getKey())) {
-								JsonObject flag = flagModeDefines.getAsJsonObject(flagMode.getKey());
-								if (flag.has(flagMode.getValue())) {
-									for (JsonElement element : flag.getAsJsonArray(flagMode.getValue())) {
+						for (Map.Entry<String, String> flag : variant.flags.entrySet()) {
+							if (flagDefines != null && flagDefines.has(flag.getKey())) {
+								JsonObject flagJson = flagDefines.getAsJsonObject(flag.getKey());
+								if (flagJson.has(flag.getValue())) {
+									for (JsonElement element : flagJson.getAsJsonArray(flag.getValue())) {
 										defines.addDefine(element.getAsString());
 									}
 								}
-							} else if ("On".equals(flagMode.getValue())) {
-								defines.addDefine(StringUtil.toUnderScore(flagMode.getKey()));
+							} else if ("On".equals(flag.getValue())) {
+								defines.addDefine(StringUtil.toUnderScore(flag.getKey()));
 							}
 						}
 
@@ -314,9 +313,23 @@ public class Main {
 							&& Objects.equals(pass1.bitSet, pass2.bitSet)
 							&& Objects.equals(pass1.fallback, pass2.fallback)
 							&& pass1.defaultBlendMode == pass2.defaultBlendMode
-							&& Objects.equals(pass1.defaultFlagModes, pass2.defaultFlagModes)
-							&& pass1.variantList != null && pass2.variantList != null) {
-						pass1.variantList.addAll(pass2.variantList);
+							&& Objects.equals(pass1.flagDefaultValues, pass2.flagDefaultValues)
+							&& pass1.variantList != null && pass2.variantList != null
+							&& pass1.variantList.size() == pass2.variantList.size()) {
+						for (CompiledMaterialDefinition.Variant variant1 : pass1.variantList) {
+							boolean found = false;
+							for (CompiledMaterialDefinition.Variant variant2 : pass2.variantList) {
+								if (variant1.flags.equals(variant2.flags)) {
+									variant1.shaderCodeMap.putAll(variant2.shaderCodeMap);
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								System.out.println("Merge failure : no variant with the same flags found");
+								return;
+							}
+						}
 					} else {
 						System.out.println("Merge failure: pass " + passEntry.getKey() + " not same");
 						return;
@@ -400,7 +413,7 @@ public class Main {
 		}
 	}
 
-	public static void unpack(File inputFile, String outputDirPath, boolean addFlagModesToCode, boolean raw, boolean dataOnly) {
+	public static void unpack(File inputFile, String outputDirPath, boolean addFlagsToCode, boolean raw, boolean dataOnly) {
 		ByteBuf buf = new ByteBuf(FileUtil.readAllBytes(inputFile));
 		CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
 		cmd.loadFrom(buf);
@@ -408,10 +421,10 @@ public class Main {
 		String fileName = inputFile.getName();
 		String name = fileName.substring(0, fileName.indexOf(".material.bin"));
 		File outputFile = outputDirPath != null ? new File(outputDirPath, name) : new File(inputFile.getParentFile(), name);
-		saveCompiledMaterialDefinition(cmd, name, outputFile, addFlagModesToCode, raw, dataOnly);
+		saveCompiledMaterialDefinition(cmd, name, outputFile, addFlagsToCode, raw, dataOnly);
 	}
 
-	public static void saveCompiledMaterialDefinition(CompiledMaterialDefinition cmd, String name, File outputDir, boolean addFlagModesToCode, boolean raw, boolean dataOnly) {
+	public static void saveCompiledMaterialDefinition(CompiledMaterialDefinition cmd, String name, File outputDir, boolean addFlagsToCode, boolean raw, boolean dataOnly) {
     	if (!outputDir.exists() && !outputDir.mkdirs())
     		return;
 
@@ -420,7 +433,7 @@ public class Main {
 			JsonArray passes = new JsonArray();
 			for (Map.Entry<String, CompiledMaterialDefinition.Pass> entry : cmd.passMap.entrySet()) {
 				String passName = entry.getKey();
-				savePass(entry.getValue(), passName, new File(outputDir, passName), addFlagModesToCode, raw);
+				savePass(entry.getValue(), passName, new File(outputDir, passName), addFlagsToCode, raw);
 				passes.add(passName);
 			}
 			jsonObject.add("passes", passes);
@@ -458,7 +471,7 @@ public class Main {
 		FileUtil.writeString(new File(outputDir, name + ".json"), GSON.toJson(jsonObject));
 	}
 
-	private static void savePass(CompiledMaterialDefinition.Pass pass, String passName, File outputDir, boolean addFlagModesToCode, boolean raw) {
+	private static void savePass(CompiledMaterialDefinition.Pass pass, String passName, File outputDir, boolean addFlagsToCode, boolean raw) {
 		if (!outputDir.exists() && !outputDir.mkdirs())
 			return;
 
@@ -481,13 +494,13 @@ public class Main {
 
 					String fileName = i + "." + toFileName(platformShaderStage, false);
 					byte[] code = bgfxShader.getCode();
-					if (addFlagModesToCode && (platformShaderStage.platformName.startsWith("GLSL") || platformShaderStage.platformName.startsWith("ESSL") || platformShaderStage.platformName.startsWith("Metal"))) {
+					if (addFlagsToCode && (platformShaderStage.platformName.startsWith("GLSL") || platformShaderStage.platformName.startsWith("ESSL") || platformShaderStage.platformName.startsWith("Metal"))) {
 						StringBuilder sb = new StringBuilder();
-						List<FlagMode> flagModeList = new ArrayList<>(variant.flagModeList);
-						flagModeList.sort(Comparator.comparing(FlagMode::getKey));
-						for (FlagMode flagMode : flagModeList) {
+						List<Map.Entry<String, String>> flagList = new ArrayList<>(variant.flags.entrySet());
+						flagList.sort(Map.Entry.comparingByKey());
+						for (Map.Entry<String, String> flag : flagList) {
 							sb.append("//");
-							sb.append(flagMode.getKey()).append("=").append(flagMode.getValue());
+							sb.append(flag.getKey()).append("=").append(flag.getValue());
 							sb.append("\n");
 						}
 						sb.append("\n");

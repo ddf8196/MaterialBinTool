@@ -181,7 +181,7 @@ public class CompiledMaterialDefinition {
         public boolean hasDefaultBlendMode;
         public BlendMode defaultBlendMode;
 
-        public Map<String, String> defaultFlagModes;
+        public Map<String, String> flagDefaultValues;
         public List<Variant> variantList;
 
         public Pass() {
@@ -196,12 +196,12 @@ public class CompiledMaterialDefinition {
                 defaultBlendMode = BlendMode.get(buf.readShortLE());
             }
 
-            short defaultFlagModeCount = buf.readShortLE();
-            defaultFlagModes = new LinkedHashMap<>(defaultFlagModeCount);
-            for (int i = 0; i < defaultFlagModeCount; ++i) {
+            short flagDefaultValueCount = buf.readShortLE();
+            flagDefaultValues = new LinkedHashMap<>(flagDefaultValueCount);
+            for (int i = 0; i < flagDefaultValueCount; ++i) {
                 String key = buf.readStringLE();
                 String value = buf.readStringLE();
-                defaultFlagModes.put(key, value);
+                flagDefaultValues.put(key, value);
             }
 
             short variantCount = buf.readShortLE();
@@ -222,8 +222,8 @@ public class CompiledMaterialDefinition {
                 buf.writeShortLE(defaultBlendMode.ordinal());
             }
 
-            buf.writeShortLE(defaultFlagModes.size());
-            for (Map.Entry<String, String> entry : defaultFlagModes.entrySet()) {
+            buf.writeShortLE(flagDefaultValues.size());
+            for (Map.Entry<String, String> entry : flagDefaultValues.entrySet()) {
                 buf.writeStringLE(entry.getKey());
                 buf.writeStringLE(entry.getValue());
             }
@@ -243,19 +243,19 @@ public class CompiledMaterialDefinition {
                     && Objects.equals(bitSet, pass.bitSet)
                     && Objects.equals(fallback, pass.fallback)
                     && defaultBlendMode == pass.defaultBlendMode
-                    && Objects.equals(defaultFlagModes, pass.defaultFlagModes)
+                    && Objects.equals(flagDefaultValues, pass.flagDefaultValues)
                     && Objects.equals(variantList, pass.variantList);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(bitSet, fallback, hasDefaultBlendMode, defaultBlendMode, defaultFlagModes, variantList);
+            return Objects.hash(bitSet, fallback, hasDefaultBlendMode, defaultBlendMode, flagDefaultValues, variantList);
         }
     }
 
     public static class Variant {
         public boolean isSupported;
-        public List<FlagMode> flagModeList;
+        public Map<String, String> flags;
         public transient Map<PlatformShaderStage, ShaderCode> shaderCodeMap;
 
         public Variant() {
@@ -263,14 +263,14 @@ public class CompiledMaterialDefinition {
 
         public void read(ByteBuf buf) {
             isSupported = buf.readBoolean();
-            short flagModeCount = buf.readShortLE();
+            short flagCount = buf.readShortLE();
             short shaderCodeCount = buf.readShortLE();
 
-            flagModeList = new ArrayList<>(flagModeCount);
-            for (int j = 0; j < flagModeCount; ++j) {
-                FlagMode flagMode = new FlagMode();
-                flagMode.read(buf);
-                flagModeList.add(flagMode);
+            flags = new LinkedHashMap<>(flagCount);
+            for (int j = 0; j < flagCount; ++j) {
+                String key = buf.readStringLE();
+                String value = buf.readStringLE();
+                flags.put(key, value);
             }
 
             shaderCodeMap = new LinkedHashMap<>(shaderCodeCount);
@@ -285,10 +285,11 @@ public class CompiledMaterialDefinition {
 
         public void write(ByteBuf buf) {
             buf.writeBoolean(isSupported);
-            buf.writeShortLE(flagModeList.size());
+            buf.writeShortLE(flags.size());
             buf.writeShortLE(shaderCodeMap.size());
-            for (FlagMode flagMode : flagModeList) {
-                flagMode.write(buf);
+            for (Map.Entry<String, String> flag : flags.entrySet()) {
+                buf.writeStringLE(flag.getKey());
+                buf.writeStringLE(flag.getValue());
             }
             for (Map.Entry<PlatformShaderStage, ShaderCode> entry : shaderCodeMap.entrySet()) {
                 entry.getKey().write(buf);
@@ -301,12 +302,12 @@ public class CompiledMaterialDefinition {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Variant variant = (Variant) o;
-            return isSupported == variant.isSupported && Objects.equals(flagModeList, variant.flagModeList) && Objects.equals(shaderCodeMap, variant.shaderCodeMap);
+            return isSupported == variant.isSupported && Objects.equals(flags, variant.flags) && Objects.equals(shaderCodeMap, variant.shaderCodeMap);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(isSupported, flagModeList, shaderCodeMap);
+            return Objects.hash(isSupported, flags, shaderCodeMap);
         }
     }
 

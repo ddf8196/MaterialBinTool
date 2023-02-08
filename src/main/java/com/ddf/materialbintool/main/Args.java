@@ -11,8 +11,8 @@ public class Args {
     @Parameter(names = {"-u", "--unpack"})
     public boolean unpack = false;
 
-    @Parameter(names = {"-a", "--add-flagmodes"})
-    public boolean addFlagModesToCode = false;
+    @Parameter(names = {"-a", "--add-flags"})
+    public boolean addFlagsToCode = false;
 
     @Parameter(names = {"--raw"})
     public boolean raw;
