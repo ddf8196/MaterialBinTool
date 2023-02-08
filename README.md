@@ -27,46 +27,46 @@ java -jar MaterialBinTool-0.5.1-all.jar [选项] <输入文件或目录>
 
 ## 编译sc文件
 目前支持的平台: ESSL(安卓), Direct3D(Win10), Metal(iOS)
-1. 执行`java -jar MaterialBinTool-0.5.1-all.jar -u material.bin文件路径`解包要编译的.material.bin文件
+1. 执行`java -jar MaterialBinTool-all.jar -u material.bin文件路径`解包要编译的.material.bin文件
 2. 在解包输出目录中创建src目录
 3. 在src目录中放置着色器源文件,顶点着色器命名为`文件名.vertex.sc`, 片元着色器命名为`文件名.fragment.sc`, varyingDef文件命名为`文件名.varying.def`
 4. (可选)在解包输出目录中创建defines.json并添加宏定义规则
 5. (可选)将shaderc.exe所在的目录添加至PATH环境变量
-6. 执行`java -jar MaterialBinTool-0.5.1-all.jar -c 解包输出目录`开始编译
+6. 执行`java -jar MaterialBinTool-all.jar -c 解包输出目录`开始编译
 
 ## 默认宏定义规则
-编译时会根据Pass名和Variant的FlagMode自动生成一些宏定义, 默认的宏定义添加和命名规则如下:
+编译时会根据Pass名和Variant的Flag以及文件名自动生成一些宏定义, 默认的宏定义添加和命名规则如下:
 1. 当前Pass名转为大写下划线形式(例: `DepthOnlyOpaque -> DEPTH_ONLY_OPAQUE`, `Transparent -> TRANSPARENT`)
-2. 值为On的FlagMode的键名转为大写下划线形式(例: `RenderAsBillboards=On -> RENDER_AS_BILLBOARDS`, `Seasons=On -> SEASONS`, `Seasons=Off -> 无`)
+2. 值为On的Flag的键名转为大写下划线形式(例: `RenderAsBillboards=On -> RENDER_AS_BILLBOARDS`, `Seasons=On -> SEASONS`, `Seasons=Off -> 无`)
 3. 当前文件名转为大写下划线形式
 
 ## defines.json
-某些FlagMode的值不只有On和Off两种, 这时可以通过在解包输出目录中创建defines.json来给这些FlagMode添加宏定义规则   
+某些Flag的值不只有On和Off两种, 这时可以通过在解包输出目录中创建defines.json来给这些Flag添加宏定义规则   
 defines.json格式如下:
 ```json
 {
     "pass": {
         "Pass名": ["宏名称"]
     },
-    "flagMode": {
+    "flag": {
         "键名": {
             "值": ["宏名称"]
         }
     }
 }
 ```
-注意: 在defines.json中有声明的Pass和FlagMode不会再按照默认宏定义规则定义宏
+注意: 在defines.json中有声明的Pass和Flag不会再按照默认宏定义规则定义宏
 
 ## 编译示例
-以编译1.18.31的RenderChunk.material.bin为例:
-1. 执行`java -jar MaterialBinTool-0.7.0-all.jar --unpack --data-only RenderChunk.material.bin`   
+以编译RenderChunk.material.bin为例:
+1. 执行`java -jar MaterialBinTool-all.jar --unpack --data-only RenderChunk.material.bin`   
 执行完后的目录结构应该是这样:
 ```
 RenderChunk/
     RenderChunk.json
 ```
 2. 在`RenderChunk`目录中创建`src`目录, 并放置`RenderChunk.vertex.sc`、`RenderChunk.fragment.sc`、`RenderChunk.varying.def.sc`及`bgfx_shader.sh`等头文件(可选)
-3. 因为RenderChunk.material.bin中的FlagMode的值都只有On/Off两种, 故无需创建`defines.json`以额外添加宏定义规则(其他文件同理视情况创建)   
+3. 因为RenderChunk.material.bin中的Flag的值都只有On/Off两种, 故无需创建`defines.json`以额外添加宏定义规则(其他文件同理视情况创建)   
 此时目录结构应为:
 ```
 RenderChunk/
@@ -77,7 +77,7 @@ RenderChunk/
         RenderChunk.varying.def.sc
     RenderChunk.json
 ```
-4. 执行`java -jar MaterialBinTool-0.7.0-all.jar -s shaderc.exe路径(可选) -i 包含bgfx_shader.sh的目录路径(可选) -c RenderChunk目录路径`开始编译   
+4. 执行`java -jar MaterialBinTool-all.jar -s shaderc.exe路径(可选) -i 包含bgfx_shader.sh的目录路径(可选) -c RenderChunk目录路径`开始编译   
 若已将shaderc.exe所在目录添加至PATH环境变量,则可不指定`-s`参数   
 若已将bgfx_shader.sh复制至src目录,则可不指定`-i`参数
 5. 执行完成后会在`RenderChunk`目录下生成编译出的`RenderChunk.material.bin`,替换安装包里的对应文件即可使用   
