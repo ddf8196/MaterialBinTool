@@ -200,7 +200,7 @@ public class Main {
 							defines.addDefine(StringUtil.toUnderScore(passName));
 						}
 
-						for (FlagMode flagMode : variant.flagModeList) {
+						for (FlagMode flagMode : variant.flags) {
 							if (flagModeDefines != null && flagModeDefines.has(flagMode.getKey())) {
 								JsonObject flag = flagModeDefines.getAsJsonObject(flagMode.getKey());
 								if (flag.has(flagMode.getValue())) {
@@ -316,9 +316,23 @@ public class Main {
 							&& Objects.equals(pass1.bitSet, pass2.bitSet)
 							&& Objects.equals(pass1.fallback, pass2.fallback)
 							&& pass1.defaultBlendMode == pass2.defaultBlendMode
-							&& Objects.equals(pass1.defaultFlagModes, pass2.defaultFlagModes)
-							&& pass1.variantList != null && pass2.variantList != null) {
-						pass1.variantList.addAll(pass2.variantList);
+							&& Objects.equals(pass1.defaultFlags, pass2.defaultFlags)
+							&& pass1.variantList != null && pass2.variantList != null
+							&& pass1.variantList.size() == pass2.variantList.size()) {
+						for (CompiledMaterialDefinition.Variant variant1 : pass1.variantList) {
+							boolean found = false;
+							for (CompiledMaterialDefinition.Variant variant2 : pass2.variantList) {
+								if (variant1.flags.equals(variant2.flags)) {
+									variant1.shaderCodeMap.putAll(variant2.shaderCodeMap);
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								System.out.println("Merge failure : same flags not found");
+								return;
+							}
+						}
 					} else {
 						System.out.println("Merge failure: pass " + passEntry.getKey() + " not same");
 						return;
@@ -485,7 +499,7 @@ public class Main {
 					byte[] code = bgfxShader.getCode();
 					if (addFlagModesToCode && (platformShaderStage.platformName.startsWith("GLSL") || platformShaderStage.platformName.startsWith("ESSL") || platformShaderStage.platformName.startsWith("Metal"))) {
 						StringBuilder sb = new StringBuilder();
-						List<FlagMode> flagModeList = new ArrayList<>(variant.flagModeList);
+						List<FlagMode> flagModeList = new ArrayList<>(variant.flags);
 						flagModeList.sort(Comparator.comparing(FlagMode::getKey));
 						for (FlagMode flagMode : flagModeList) {
 							sb.append("//");
