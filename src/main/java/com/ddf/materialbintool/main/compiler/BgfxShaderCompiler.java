@@ -16,6 +16,8 @@ public class BgfxShaderCompiler {
     private final String compilerPath;
     private final List<String> includePaths = new ArrayList<>();
     private boolean debug = false;
+    private boolean optimize = true;
+    private int optimizationLevel = 3;
     private final File tempDir;
 
     public BgfxShaderCompiler(String compilerPath) {
@@ -35,6 +37,22 @@ public class BgfxShaderCompiler {
         this.debug = debug;
     }
 
+    public boolean isOptimize() {
+        return optimize;
+    }
+
+    public void setOptimize(boolean optimize) {
+        this.optimize = optimize;
+    }
+
+    public int getOptimizationLevel() {
+        return optimizationLevel;
+    }
+
+    public void setOptimizationLevel(int optimizationLevel) {
+        this.optimizationLevel = optimizationLevel;
+    }
+
     public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderStage type) {
         File tempOutputFile = new File(tempDir, System.nanoTime() + Integer.toHexString(random.nextInt()));
         int code = compile(input, varyingDef, tempOutputFile, defines, platform, type);
@@ -51,14 +69,19 @@ public class BgfxShaderCompiler {
         List<String> command = new ArrayList<>();
         command.add(compilerPath);
 
+        for (String includePath : includePaths) {
+            command.add("-i");
+            command.add(includePath);
+        }
+
         command.add("-f");
         command.add(input.getAbsolutePath());
 
-        command.add("-o");
-        command.add(output.getPath());
-
         command.add("--varyingdef");
         command.add(varyingDef.getAbsolutePath());
+
+        command.add("-o");
+        command.add(output.getPath());
 
         command.add("--define");
         command.add(defines.toString());
@@ -72,11 +95,9 @@ public class BgfxShaderCompiler {
         command.add("--profile");
         command.add(toProfileString(platform, stage));
 
-        command.add("-O 3");
-
-        for (String includePath : includePaths) {
-            command.add("-i");
-            command.add(includePath);
+        if (optimize) {
+            command.add("-O");
+            command.add(Integer.toString(Math.max(Math.min(optimizationLevel, 3), 0)));
         }
 
         if (debug)
