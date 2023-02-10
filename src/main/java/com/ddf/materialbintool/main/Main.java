@@ -150,10 +150,16 @@ public class Main {
 				computeSourceFile = tmp;
 
 			File definesJsonFile = new File(parent, "defines.json");
+			JsonObject materialDefines = null;
 			JsonObject passDefines = null;
 			JsonObject flagDefines = null;
 			if (definesJsonFile.exists()) {
 				JsonObject definesJson = JsonParser.parseString(FileUtil.readString(definesJsonFile)).getAsJsonObject();
+				if (definesJson.has("material"))
+					materialDefines = definesJson.getAsJsonObject("material");
+				else if (definesJson.has("materials"))
+					materialDefines = definesJson.getAsJsonObject("materials");
+
 				if (definesJson.has("pass"))
 					passDefines = definesJson.getAsJsonObject("pass");
 				else if (definesJson.has("passes"))
@@ -191,6 +197,12 @@ public class Main {
 						Defines defines = new Defines();
 						defines.addDefine("BGFX_CONFIG_MAX_BONES", "4");
 
+						if (materialDefines != null && materialDefines.has(cmd.name)) {
+							for (JsonElement element : materialDefines.getAsJsonArray(cmd.name)) {
+								defines.addDefine(element.getAsString());
+							}
+						}
+
 						if (passDefines != null && passDefines.has(passName)) {
 							for (JsonElement element : passDefines.getAsJsonArray(passName)) {
 								defines.addDefine(element.getAsString());
@@ -211,8 +223,6 @@ public class Main {
 								defines.addDefine(StringUtil.toUnderScore(flag.getKey()));
 							}
 						}
-
-						defines.addDefine(StringUtil.toUnderScore(name));
 
 						File input;
 						switch (platformShaderStage.stage) {

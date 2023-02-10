@@ -4,10 +4,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Defines {
-    private Map<String, String> defines = new LinkedHashMap<>();
+    private final Map<String, String> defines = new LinkedHashMap<>();
 
     public void addDefine(String key) {
-        defines.put(key, "1");
+        defines.put(key, "");
     }
 
     public void addDefine(String key, String value) {
