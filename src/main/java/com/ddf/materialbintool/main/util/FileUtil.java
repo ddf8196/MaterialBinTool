@@ -2,6 +2,7 @@ package com.ddf.materialbintool.main.util;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class FileUtil {
     public static byte[] readAllBytes(File file) {
@@ -51,5 +52,16 @@ public class FileUtil {
             }
         }
         file.delete();
+    }
+
+    public static File createTempDir() {
+        try {
+            File dir = Files.createTempDirectory("materialbintool").toFile();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> delete(dir)));
+            return dir;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

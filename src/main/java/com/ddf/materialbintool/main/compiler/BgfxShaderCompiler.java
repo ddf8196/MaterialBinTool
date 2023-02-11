@@ -6,13 +6,11 @@ import com.ddf.materialbintool.materials.definition.ShaderStage;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class BgfxShaderCompiler {
-    private final Random random = new Random();
     private final String compilerPath;
     private final List<String> includePaths = new ArrayList<>();
     private boolean debug = false;
@@ -22,7 +20,7 @@ public class BgfxShaderCompiler {
 
     public BgfxShaderCompiler(String compilerPath) {
         this.compilerPath = compilerPath;
-        this.tempDir = createTempDir();
+        this.tempDir = FileUtil.createTempDir();
     }
 
     public void addIncludePath(String includePath) {
@@ -54,7 +52,7 @@ public class BgfxShaderCompiler {
     }
 
     public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderStage type) {
-        File tempOutputFile = new File(tempDir, System.nanoTime() + Integer.toHexString(random.nextInt()));
+        File tempOutputFile = new File(tempDir, System.nanoTime() + Integer.toHexString(ThreadLocalRandom.current().nextInt()) + ".bin");
         int code = compile(input, varyingDef, tempOutputFile, defines, platform, type);
         if (code == 0) {
             byte[] output = tempOutputFile.exists() ? FileUtil.readAllBytes(tempOutputFile) : null;
@@ -113,17 +111,6 @@ public class BgfxShaderCompiler {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             return -1;
-        }
-    }
-
-    private static File createTempDir() {
-        try {
-            File dir = Files.createTempDirectory("materialbintool").toFile();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtil.delete(dir)));
-            return dir;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 

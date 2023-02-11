@@ -5,6 +5,7 @@ import com.beust.jcommander.ParameterException;
 import com.ddf.materialbintool.bgfx.BgfxShader;
 import com.ddf.materialbintool.main.compiler.BgfxShaderCompiler;
 import com.ddf.materialbintool.main.compiler.Defines;
+import com.ddf.materialbintool.main.compiler.VaryingDefPreprocessor;
 import com.ddf.materialbintool.main.util.StringUtil;
 import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
@@ -107,7 +108,7 @@ public class Main {
 	}
 
 	private static void compile(Args args) {
-		loop:
+		fileLoop:
 		for (String path : args.inputPath) {
 			File inputFile = new File(path);
 			if (!inputFile.exists()) {
@@ -177,6 +178,7 @@ public class Main {
 				return;
 			}
 
+			VaryingDefPreprocessor preprocessor = new VaryingDefPreprocessor(varyingDefFile);
 			BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
 			if (args.includePath != null) {
 				for (String p : args.includePath) {
@@ -240,13 +242,19 @@ public class Main {
 								input = fragmentSourceFile;
 								break;
 						}
-						byte[] compiled = compiler.compile(input, varyingDefFile, defines, platformShaderStage.platform, platformShaderStage.stage);
-						if (compiled != null) {
-							shaderCode.bgfxShaderData = compiled;
-						} else {
-							System.out.println("Compilation failure");
-							continue loop;
+
+						File varyingDef = preprocessor.getPreprocessedVaryingDef(platformShaderStage);
+						if (varyingDef == null) {
+							System.out.println("Failed to preprocess varyingdef");
+							continue fileLoop;
 						}
+
+						byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
+						if (compiled == null) {
+							System.out.println("Compilation failure");
+							continue fileLoop;
+						}
+						shaderCode.bgfxShaderData = compiled;
 					}
 				}
 			}
