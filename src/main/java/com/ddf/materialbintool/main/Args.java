@@ -2,6 +2,7 @@ package com.ddf.materialbintool.main;
 
 import com.beust.jcommander.Parameter;
 
+import java.io.File;
 import java.util.List;
 
 public class Args {
@@ -32,6 +33,12 @@ public class Args {
     @Parameter(names = {"-i", "--include"})
     public List<String> includePath;
 
+    @Parameter(names = {"-t", "--threads"})
+    public int threads = 1;
+
+    @Parameter(names = {"--data"})
+    public File dataFile;
+
     @Parameter(names = {"--debug"})
     public boolean debug = false;
 
@@ -39,11 +46,11 @@ public class Args {
     public boolean mergeData = false;
 
     @Parameter(names = {"-o", "--output"})
-    public String outputPath;
+    public File outputDir;
 
     @Parameter(names = {"-e", "--encrypt"})
     public boolean encrypt = false;
 
     @Parameter(required = true, description = "files", variableArity = true)
-    public List<String> inputPath;
+    public List<File> inputFiles;
 }

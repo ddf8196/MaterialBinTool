@@ -57,8 +57,7 @@ public class Main {
     }
 
 	private static void unpack(Args args) {
-		for (String path : args.inputPath) {
-			File inputFile = new File(path);
+		for (File inputFile : args.inputFiles) {
 			if (!inputFile.exists()) {
 				System.out.println("Error: input file does not exist");
 				continue;
@@ -66,12 +65,12 @@ public class Main {
 
 			if (inputFile.isFile() && inputFile.getName().endsWith(".material.bin")) {
 				System.out.println("Unpacking " + inputFile.getName());
-				unpack(inputFile, args.outputPath, args.addFlagsToCode, args.raw, args.dataOnly);
+				unpack(inputFile, args.outputDir, args.addFlagsToCode, args.raw, args.dataOnly);
 			} else if (inputFile.isDirectory()) {
 				for (File file : inputFile.listFiles()) {
 					if (file.getName().endsWith(".material.bin")) {
 						System.out.println("Unpacking " + file.getName());
-						unpack(file, args.outputPath, args.addFlagsToCode, args.raw, args.dataOnly);
+						unpack(file, args.outputDir, args.addFlagsToCode, args.raw, args.dataOnly);
 					}
 				}
 			} else {
@@ -81,15 +80,14 @@ public class Main {
 	}
 
 	private static void repack(Args args) {
-		for (String path : args.inputPath) {
-			File inputFile = new File(path);
+		for (File inputFile : args.inputFiles) {
 			if (!inputFile.exists()) {
 				System.out.println("Error: input file does not exist");
 				continue;
 			}
 
 			File jsonFile = getInputJsonFile(inputFile);
-			File outputFile = getRepackOutputFile(inputFile, args.outputPath);
+			File outputFile = getRepackOutputFile(inputFile, args.outputDir);
 			if (jsonFile == null) {
 				System.out.println("Error: failed to get input file");
 				return;
@@ -108,172 +106,174 @@ public class Main {
 	}
 
 	private static void compile(Args args) {
-		fileLoop:
-		for (String path : args.inputPath) {
-			File inputFile = new File(path);
+		String compilerPath = findCompilerPath(args.shaderCompilerPath);
+		if (compilerPath == null) {
+			System.out.println("Error: shaderc not found");
+			return;
+		}
+
+		for (File inputFile : args.inputFiles) {
 			if (!inputFile.exists()) {
 				System.out.println("Error: input file does not exist");
 				continue;
 			}
 
 			File jsonFile = getInputJsonFile(inputFile);
-			File outputFile = getRepackOutputFile(inputFile, args.outputPath);
+			File outputFile = getRepackOutputFile(inputFile, args.outputDir);
 			if (jsonFile == null) {
 				System.out.println("Error: failed to get input file");
-				return;
+				continue;
 			}
 			if (outputFile == null) {
 				System.out.println("Error: failed to create output file");
-				return;
+				continue;
 			}
 
-			System.out.println("Compiling " + outputFile.getName());
-
-			String name = jsonFile.getName().substring(0, jsonFile.getName().indexOf(".json"));
 			File parent = jsonFile.getParentFile();
-			File srcDir = new File(parent, "src");
-			File varyingDefFile = new File(srcDir, name + ".varying.def.sc");
-			File vertexSourceFile = new File(srcDir, name + ".vertex.sc");
-			File fragmentSourceFile = new File(srcDir, name + ".fragment.sc");
-			File computeSourceFile = new File(srcDir, name + ".compute.sc");
-
-			File tmp = new File(srcDir, "varying.def.sc");
-			if (!varyingDefFile.exists() && tmp.exists())
-				varyingDefFile = tmp;
-			tmp = new File(srcDir, "vertex.sc");
-			if (!vertexSourceFile.exists() && tmp.exists())
-				vertexSourceFile = tmp;
-			tmp = new File(srcDir, "fragment.sc");
-			if (!fragmentSourceFile.exists() && tmp.exists())
-				fragmentSourceFile = tmp;
-			tmp = new File(srcDir, "compute.sc");
-			if (!computeSourceFile.exists() && tmp.exists())
-				computeSourceFile = tmp;
-
-			File definesJsonFile = new File(parent, "defines.json");
-			JsonObject materialDefines = null;
-			JsonObject passDefines = null;
-			JsonObject flagDefines = null;
-			if (definesJsonFile.exists()) {
-				JsonObject definesJson = JsonParser.parseString(FileUtil.readString(definesJsonFile)).getAsJsonObject();
-				if (definesJson.has("material"))
-					materialDefines = definesJson.getAsJsonObject("material");
-				else if (definesJson.has("materials"))
-					materialDefines = definesJson.getAsJsonObject("materials");
-
-				if (definesJson.has("pass"))
-					passDefines = definesJson.getAsJsonObject("pass");
-				else if (definesJson.has("passes"))
-					passDefines = definesJson.getAsJsonObject("passes");
-
-				if (definesJson.has("flag"))
-					flagDefines = definesJson.getAsJsonObject("flag");
-				if (definesJson.has("flags"))
-					flagDefines = definesJson.getAsJsonObject("flags");
-			}
-
-			String compilerPath = findCompilerPath(args.shaderCompilerPath);
-			if (compilerPath == null) {
-				System.out.println("Error: shaderc not found");
-				return;
-			}
-
-			VaryingDefPreprocessor preprocessor = new VaryingDefPreprocessor(varyingDefFile);
-			BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
-			if (args.includePath != null) {
-				for (String p : args.includePath) {
-					compiler.addIncludePath(p);
-				}
-			}
-			compiler.setDebug(args.debug);
-
-			CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, false, args.raw, true);
-			for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
-				String passName = passEntry.getKey();
-				System.out.println("Compiling " + passName);
-				for (CompiledMaterialDefinition.Variant variant : passEntry.getValue().variantList) {
-					for (Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode> entry : variant.shaderCodeMap.entrySet()) {
-						PlatformShaderStage platformShaderStage = entry.getKey();
-						CompiledMaterialDefinition.ShaderCode shaderCode = entry.getValue();
-
-						Defines defines = new Defines();
-						defines.addDefine("BGFX_CONFIG_MAX_BONES", "4");
-
-						if (materialDefines != null && materialDefines.has(cmd.name)) {
-							for (JsonElement element : materialDefines.getAsJsonArray(cmd.name)) {
-								defines.addDefine(element.getAsString());
-							}
-						}
-
-						if (passDefines != null && passDefines.has(passName)) {
-							for (JsonElement element : passDefines.getAsJsonArray(passName)) {
-								defines.addDefine(element.getAsString());
-							}
-						} else {
-							defines.addDefine(StringUtil.toUnderScore(passName));
-						}
-
-						for (Map.Entry<String, String> flag : variant.flags.entrySet()) {
-							if (flagDefines != null && flagDefines.has(flag.getKey())) {
-								JsonObject flagJson = flagDefines.getAsJsonObject(flag.getKey());
-								if (flagJson.has(flag.getValue())) {
-									for (JsonElement element : flagJson.getAsJsonArray(flag.getValue())) {
-										defines.addDefine(element.getAsString());
-									}
-								}
-							} else if ("On".equals(flag.getValue())) {
-								defines.addDefine(StringUtil.toUnderScore(flag.getKey()));
-							}
-						}
-
-						File input;
-						switch (platformShaderStage.stage) {
-							case Vertex:
-								input = vertexSourceFile;
-								break;
-							case Fragment:
-								input = fragmentSourceFile;
-								break;
-							case Compute:
-								input = computeSourceFile;
-								break;
-							case Unknown:
-							default:
-								input = fragmentSourceFile;
-								break;
-						}
-
-						File varyingDef = preprocessor.getPreprocessedVaryingDef(platformShaderStage);
-						if (varyingDef == null) {
-							System.out.println("Failed to preprocess varyingdef");
-							continue fileLoop;
-						}
-
-						byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
-						if (compiled == null) {
-							System.out.println("Compilation failure");
-							continue fileLoop;
-						}
-						shaderCode.bgfxShaderData = compiled;
-					}
-				}
-			}
-
-			ByteBuf buf = new ByteBuf();
-			cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
-			FileUtil.write(outputFile, buf.toByteArray());
+			compileFile(args, compilerPath, parent, jsonFile, outputFile);
 		}
 	}
 
+	private static void compileFile(Args args, String compilerPath, File rootDir, File jsonFile, File outputFile) {
+		System.out.println("Compiling " + outputFile.getName());
+
+		String name = jsonFile.getName().substring(0, jsonFile.getName().indexOf(".json"));
+		File srcDir = new File(rootDir, "src");
+		File varyingDefFile = new File(srcDir, name + ".varying.def.sc");
+		File vertexSourceFile = new File(srcDir, name + ".vertex.sc");
+		File fragmentSourceFile = new File(srcDir, name + ".fragment.sc");
+		File computeSourceFile = new File(srcDir, name + ".compute.sc");
+
+		File tmp = new File(srcDir, "varying.def.sc");
+		if (!varyingDefFile.exists() && tmp.exists())
+			varyingDefFile = tmp;
+		tmp = new File(srcDir, "vertex.sc");
+		if (!vertexSourceFile.exists() && tmp.exists())
+			vertexSourceFile = tmp;
+		tmp = new File(srcDir, "fragment.sc");
+		if (!fragmentSourceFile.exists() && tmp.exists())
+			fragmentSourceFile = tmp;
+		tmp = new File(srcDir, "compute.sc");
+		if (!computeSourceFile.exists() && tmp.exists())
+			computeSourceFile = tmp;
+
+		File definesJsonFile = new File(rootDir, "defines.json");
+		JsonObject materialDefines = null;
+		JsonObject passDefines = null;
+		JsonObject flagDefines = null;
+		if (definesJsonFile.exists()) {
+			JsonObject definesJson = JsonParser.parseString(FileUtil.readString(definesJsonFile)).getAsJsonObject();
+			if (definesJson.has("material"))
+				materialDefines = definesJson.getAsJsonObject("material");
+			else if (definesJson.has("materials"))
+				materialDefines = definesJson.getAsJsonObject("materials");
+
+			if (definesJson.has("pass"))
+				passDefines = definesJson.getAsJsonObject("pass");
+			else if (definesJson.has("passes"))
+				passDefines = definesJson.getAsJsonObject("passes");
+
+			if (definesJson.has("flag"))
+				flagDefines = definesJson.getAsJsonObject("flag");
+			if (definesJson.has("flags"))
+				flagDefines = definesJson.getAsJsonObject("flags");
+		}
+
+		VaryingDefPreprocessor preprocessor = new VaryingDefPreprocessor(varyingDefFile);
+		BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
+		if (args.includePath != null) {
+			for (String p : args.includePath) {
+				compiler.addIncludePath(p);
+			}
+		}
+		compiler.setDebug(args.debug);
+
+		CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, false, args.raw, true);
+		for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
+			String passName = passEntry.getKey();
+			System.out.println("Compiling " + passName);
+			for (CompiledMaterialDefinition.Variant variant : passEntry.getValue().variantList) {
+				for (Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode> entry : variant.shaderCodeMap.entrySet()) {
+					PlatformShaderStage platformShaderStage = entry.getKey();
+					CompiledMaterialDefinition.ShaderCode shaderCode = entry.getValue();
+
+					Defines defines = new Defines();
+					defines.addDefine("BGFX_CONFIG_MAX_BONES", "4");
+
+					if (materialDefines != null && materialDefines.has(cmd.name)) {
+						for (JsonElement element : materialDefines.getAsJsonArray(cmd.name)) {
+							defines.addDefine(element.getAsString());
+						}
+					}
+
+					if (passDefines != null && passDefines.has(passName)) {
+						for (JsonElement element : passDefines.getAsJsonArray(passName)) {
+							defines.addDefine(element.getAsString());
+						}
+					} else {
+						defines.addDefine(StringUtil.toUnderScore(passName));
+					}
+
+					for (Map.Entry<String, String> flag : variant.flags.entrySet()) {
+						if (flagDefines != null && flagDefines.has(flag.getKey())) {
+							JsonObject flagJson = flagDefines.getAsJsonObject(flag.getKey());
+							if (flagJson.has(flag.getValue())) {
+								for (JsonElement element : flagJson.getAsJsonArray(flag.getValue())) {
+									defines.addDefine(element.getAsString());
+								}
+							}
+						} else if ("On".equals(flag.getValue())) {
+							defines.addDefine(StringUtil.toUnderScore(flag.getKey()));
+						}
+					}
+
+					File input;
+					switch (platformShaderStage.stage) {
+						case Vertex:
+							input = vertexSourceFile;
+							break;
+						case Fragment:
+							input = fragmentSourceFile;
+							break;
+						case Compute:
+							input = computeSourceFile;
+							break;
+						case Unknown:
+						default:
+							input = fragmentSourceFile;
+							break;
+					}
+
+					File varyingDef = preprocessor.getPreprocessedVaryingDef(platformShaderStage);
+					if (varyingDef == null) {
+						System.out.println("Failed to preprocess varyingdef");
+						return;
+					}
+
+					byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
+					if (compiled == null) {
+						System.out.println("Compilation failure");
+						return;
+					}
+					shaderCode.bgfxShaderData = compiled;
+				}
+			}
+		}
+
+		ByteBuf buf = new ByteBuf();
+		cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
+		FileUtil.write(outputFile, buf.toByteArray());
+	}
+
 	private static void mergeData(Args args) {
-		if (args.inputPath.size() < 2) {
+		if (args.inputFiles.size() < 2) {
 			return;
 		}
-		if (args.outputPath == null) {
+		File outputDir = args.outputDir;
+		if (outputDir == null) {
 			System.out.println("Error: output directory not specified");
 			return;
 		}
-		File outputDir = new File(args.outputPath);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			System.out.println("Error: failed to create output directory");
 			return;
@@ -285,8 +285,7 @@ public class Main {
 
 		String name = null;
 		CompiledMaterialDefinition merged = null;
-		for (String path : args.inputPath) {
-			File inputFile = new File(path);
+		for (File inputFile : args.inputFiles) {
 			if (!inputFile.exists()) {
 				System.out.println("Error: input file does not exist");
 				return;
@@ -405,7 +404,7 @@ public class Main {
 		return null;
 	}
 
-	private static File getRepackOutputFile(File inputFile, String outputDirPath) {
+	private static File getRepackOutputFile(File inputFile, File outputDir) {
 		String fileName = inputFile.getName();
 		String name;
 		if (inputFile.isDirectory()) {
@@ -416,12 +415,11 @@ public class Main {
 			return null;
 		}
 
-		if (outputDirPath != null) {
-			File dir = new File(outputDirPath);
-			if (!dir.exists()) {
-				dir.mkdirs();
+		if (outputDir != null) {
+			if (!outputDir.exists() && !outputDir.mkdirs()) {
+				return null;
 			}
-			return new File(dir, name);
+			return new File(outputDir, name);
 		}
 
 		if (inputFile.isDirectory()) {
@@ -431,14 +429,14 @@ public class Main {
 		}
 	}
 
-	public static void unpack(File inputFile, String outputDirPath, boolean addFlagsToCode, boolean raw, boolean dataOnly) {
+	public static void unpack(File inputFile, File outputDir, boolean addFlagsToCode, boolean raw, boolean dataOnly) {
 		ByteBuf buf = new ByteBuf(FileUtil.readAllBytes(inputFile));
 		CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
 		cmd.loadFrom(buf);
 
 		String fileName = inputFile.getName();
 		String name = fileName.substring(0, fileName.indexOf(".material.bin"));
-		File outputFile = outputDirPath != null ? new File(outputDirPath, name) : new File(inputFile.getParentFile(), name);
+		File outputFile = outputDir != null ? new File(outputDir, name) : new File(inputFile.getParentFile(), name);
 		saveCompiledMaterialDefinition(cmd, name, outputFile, addFlagsToCode, raw, dataOnly);
 	}
 
