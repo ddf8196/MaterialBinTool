@@ -19,8 +19,12 @@ public class BgfxShaderCompiler {
     private final File tempDir;
 
     public BgfxShaderCompiler(String compilerPath) {
+        this(compilerPath, FileUtil.createTempDir());
+    }
+
+    public BgfxShaderCompiler(String compilerPath, File tempDir) {
         this.compilerPath = compilerPath;
-        this.tempDir = FileUtil.createTempDir();
+        this.tempDir = tempDir;
     }
 
     public void addIncludePath(String includePath) {

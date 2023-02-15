@@ -12,14 +12,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class VaryingDefPreprocessor {
+public class VaryingDefPreprocessor implements AutoCloseable {
     private final Map<PlatformShaderStage, File> cache = new HashMap<>();
     private final File inputFile;
     private final File tempDir;
 
     public VaryingDefPreprocessor(File inputFile) {
+        this(inputFile, FileUtil.createTempDir());
+    }
+
+    public VaryingDefPreprocessor(File inputFile, File tempDir) {
         this.inputFile = inputFile;
-        this.tempDir = FileUtil.createTempDir();
+        this.tempDir = tempDir;
     }
 
     public File getPreprocessedVaryingDef(PlatformShaderStage platformShaderStage) {
@@ -111,7 +115,6 @@ public class VaryingDefPreprocessor {
             preprocessor.close();
 
             File file = new File(tempDir, System.nanoTime() + Integer.toHexString(ThreadLocalRandom.current().nextInt()) + "varying.def.sc");
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtil.delete(file)));
             FileUtil.writeString(file, preprocessed.toString());
             cache.put(platformShaderStage, file);
             return file;
@@ -119,5 +122,13 @@ public class VaryingDefPreprocessor {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void close() {
+        for (File file : cache.values()) {
+            FileUtil.delete(file);
+        }
+        cache.clear();
     }
 }
