@@ -21,6 +21,7 @@ import java.util.*;
 
 public class Main {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	private static File tempDir;
 
 	public static void main(String[] args1) {
 		Args args = new Args();
@@ -112,10 +113,57 @@ public class Main {
 			return;
 		}
 
+		tempDir = FileUtil.createTempDir();
+		if (tempDir == null) {
+			System.out.println("Error: failed to create temporary directory");
+			return;
+		}
+
 		for (File inputFile : args.inputFiles) {
 			if (!inputFile.exists()) {
 				System.out.println("Error: input file does not exist");
 				continue;
+			}
+
+			if (inputFile.isDirectory()) {
+				File dataDir = null, dataFile = null;
+				if (args.dataFile != null) {
+					if (args.dataFile.isDirectory()) {
+						dataDir = args.dataFile;
+					} else {
+						dataFile = args.dataFile;
+					}
+				} else {
+					dataDir = new File(inputFile, "data");
+				}
+
+				File outputDir = args.outputDir != null ? args.outputDir : new File(inputFile, "build");
+				if (!outputDir.exists() && !outputDir.mkdirs()) {
+					System.out.println("Error: failed to create output directory");
+					continue;
+				}
+
+				if (dataDir != null && dataDir.exists() && dataDir.isDirectory()) {
+					for (File dataJsonFile : dataDir.listFiles()) {
+						String fileName = dataJsonFile.getName();
+						if (!fileName.endsWith(".json")) {
+							System.out.println("Warning: " + dataJsonFile.getAbsolutePath() + " is not a json file, skipped");
+							continue;
+						}
+						String outputFileName = fileName.substring(0, fileName.indexOf(".json")) + ".material.bin";
+						compileFile(args, compilerPath, inputFile, dataJsonFile, new File(outputDir, outputFileName));
+					}
+					continue;
+				} else if (dataFile != null && dataFile.exists() && dataFile.isFile()) {
+					String fileName = dataFile.getName();
+					if (!fileName.endsWith(".json")) {
+						System.out.println("Warning: " + dataFile.getAbsolutePath() + " is not a json file, skipped");
+						continue;
+					}
+					String outputFileName = fileName.substring(0, fileName.indexOf(".json")) + ".material.bin";
+					compileFile(args, compilerPath, inputFile, dataFile, new File(outputDir, outputFileName));
+					continue;
+				}
 			}
 
 			File jsonFile = getInputJsonFile(inputFile);
@@ -179,8 +227,8 @@ public class Main {
 				flagDefines = definesJson.getAsJsonObject("flags");
 		}
 
-		VaryingDefPreprocessor preprocessor = new VaryingDefPreprocessor(varyingDefFile);
-		BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath);
+		VaryingDefPreprocessor preprocessor = new VaryingDefPreprocessor(varyingDefFile, tempDir);
+		BgfxShaderCompiler compiler = new BgfxShaderCompiler(compilerPath, tempDir);
 		if (args.includePath != null) {
 			for (String p : args.includePath) {
 				compiler.addIncludePath(p);
@@ -259,6 +307,7 @@ public class Main {
 				}
 			}
 		}
+		preprocessor.close();
 
 		ByteBuf buf = new ByteBuf();
 		cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
