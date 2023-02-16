@@ -18,6 +18,10 @@ import com.google.gson.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -236,7 +240,19 @@ public class Main {
 		}
 		compiler.setDebug(args.debug);
 
+		boolean multiThread = args.threads > 1;
+		BlockingQueue<Runnable> taskQueue = multiThread ? new ArrayBlockingQueue<>(args.threads * 2) : null;
+		AtomicBoolean failed = multiThread ? new AtomicBoolean(false) : null;
+		ConsumerThread[] threads = multiThread ? new ConsumerThread[args.threads] : null;
+		if (multiThread) {
+			for (int i = 0; i < threads.length; i++) {
+				threads[i] = new ConsumerThread(taskQueue);
+				threads[i].start();
+			}
+		}
+
 		CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, false, args.raw, true);
+		passLoop:
 		for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
 			String passName = passEntry.getKey();
 			System.out.println("Compiling " + passName);
@@ -295,19 +311,59 @@ public class Main {
 					File varyingDef = preprocessor.getPreprocessedVaryingDef(platformShaderStage);
 					if (varyingDef == null) {
 						System.out.println("Failed to preprocess varyingdef");
-						return;
+						if (!multiThread) {
+							preprocessor.close();
+							return;
+						} else {
+							failed.set(true);
+							break passLoop;
+						}
 					}
 
-					byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
-					if (compiled == null) {
-						System.out.println("Compilation failure");
-						return;
+					if (!multiThread) {
+						byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
+						if (compiled == null) {
+							System.out.println("Compilation failure");
+							preprocessor.close();
+							return;
+						}
+						shaderCode.bgfxShaderData = compiled;
+					} else {
+						if (failed.get()) {
+							break passLoop;
+						}
+						try {
+							taskQueue.put(() -> {
+								if (failed.get())
+									return;
+								byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
+								if (compiled == null) {
+									failed.set(true);
+									return;
+								}
+								shaderCode.bgfxShaderData = compiled;
+							});
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
-					shaderCode.bgfxShaderData = compiled;
 				}
 			}
 		}
 		preprocessor.close();
+
+		if (multiThread) {
+			try {
+				for (ConsumerThread t : threads)
+					t.setStop(true);
+				for (ConsumerThread t : threads)
+					t.join();
+			} catch (InterruptedException ignored) {}
+		}
+		if (multiThread && failed.get()) {
+			System.out.println("Compilation failure");
+			return;
+		}
 
 		ByteBuf buf = new ByteBuf();
 		cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
@@ -694,5 +750,35 @@ public class Main {
 		else if (platformShaderStage.platformName.startsWith("Vulkan"))
 			fileName += ".spirv";
 		return fileName;
+	}
+
+	private static class ConsumerThread extends Thread {
+		private final BlockingQueue<Runnable> taskQueue;
+		private volatile boolean stop = false;
+
+		public ConsumerThread(BlockingQueue<Runnable> taskQueue) {
+			this.taskQueue = taskQueue;
+			setDaemon(true);
+		}
+
+		public boolean isStop() {
+			return stop;
+		}
+
+		public void setStop(boolean stop) {
+			this.stop = stop;
+		}
+
+		@Override
+		public void run() {
+			try {
+				while (!stop || !taskQueue.isEmpty()) {
+					Runnable task = taskQueue.poll(1, TimeUnit.SECONDS);
+					if (task != null) {
+						task.run();
+					}
+				}
+			} catch (InterruptedException ignored) {}
+		}
 	}
 }
