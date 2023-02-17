@@ -70,12 +70,12 @@ public class Main {
 
 			if (inputFile.isFile() && inputFile.getName().endsWith(".material.bin")) {
 				System.out.println("Unpacking " + inputFile.getName());
-				unpack(inputFile, args.outputDir, args.addFlagsToCode, args.raw, args.dataOnly);
+				unpack(inputFile, args.outputDir, args.addFlagsToCode, args.reorderVariants, args.raw, args.dataOnly);
 			} else if (inputFile.isDirectory()) {
 				for (File file : inputFile.listFiles()) {
 					if (file.getName().endsWith(".material.bin")) {
 						System.out.println("Unpacking " + file.getName());
-						unpack(file, args.outputDir, args.addFlagsToCode, args.raw, args.dataOnly);
+						unpack(file, args.outputDir, args.addFlagsToCode, args.reorderVariants, args.raw, args.dataOnly);
 					}
 				}
 			} else {
@@ -534,10 +534,31 @@ public class Main {
 		}
 	}
 
-	public static void unpack(File inputFile, File outputDir, boolean addFlagsToCode, boolean raw, boolean dataOnly) {
+	public static void unpack(File inputFile, File outputDir, boolean addFlagsToCode, boolean reorder, boolean raw, boolean dataOnly) {
 		ByteBuf buf = new ByteBuf(FileUtil.readAllBytes(inputFile));
 		CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
 		cmd.loadFrom(buf);
+
+		if (reorder) {
+			for (CompiledMaterialDefinition.Pass pass : cmd.passMap.values()) {
+				if (pass.variantList.isEmpty())
+					continue;
+
+				List<String> flagKeys = new ArrayList<>(pass.variantList.get(0).flags.keySet());
+				if (flagKeys.isEmpty())
+					continue;
+
+				flagKeys.sort(Comparator.naturalOrder());
+				pass.variantList.sort(Comparator.comparing(variant -> variant.flags, (flags1, flags2) -> {
+					for (String key : flagKeys) {
+						int c = flags1.get(key).compareTo(flags2.get(key));
+						if (c != 0)
+							return c;
+					}
+					return 0;
+				}));
+			}
+		}
 
 		String fileName = inputFile.getName();
 		String name = fileName.substring(0, fileName.indexOf(".material.bin"));
@@ -624,7 +645,8 @@ public class Main {
 							sb.append(flag.getKey()).append("=").append(flag.getValue());
 							sb.append("\n");
 						}
-						sb.append("\n");
+						if (!flagList.isEmpty())
+							sb.append("\n");
 						sb.append(new String(code, StandardCharsets.UTF_8));
 						code = sb.toString().getBytes(StandardCharsets.UTF_8);
 					}

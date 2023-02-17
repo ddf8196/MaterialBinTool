@@ -15,6 +15,9 @@ public class Args {
     @Parameter(names = {"-a", "--add-flags"})
     public boolean addFlagsToCode = false;
 
+    @Parameter(names = {"--reorder-variants"})
+    public boolean reorderVariants = false;
+
     @Parameter(names = {"--raw"})
     public boolean raw;
 
