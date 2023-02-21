@@ -1,2 +1,6 @@
 rootProject.name = 'MaterialBinTool'
 
+file('thirdparty').eachDir { dir ->
+    include dir.name
+    project(":${dir.name}").projectDir = dir
+}

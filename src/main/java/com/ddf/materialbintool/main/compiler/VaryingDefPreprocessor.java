@@ -2,12 +2,14 @@ package com.ddf.materialbintool.main.compiler;
 
 import com.ddf.materialbintool.main.util.FileUtil;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
-import com.ddf.materialbintool.thirdparty.anarres.cpp.LexerException;
-import com.ddf.materialbintool.thirdparty.anarres.cpp.Preprocessor;
-import com.ddf.materialbintool.thirdparty.anarres.cpp.Token;
+import org.anarres.cpp.FileLexerSource;
+import org.anarres.cpp.LexerException;
+import org.anarres.cpp.Preprocessor;
+import org.anarres.cpp.Token;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
@@ -32,7 +34,7 @@ public class VaryingDefPreprocessor implements AutoCloseable {
             return cached;
 
         try {
-            Preprocessor preprocessor = new Preprocessor(inputFile);
+            Preprocessor preprocessor = new Preprocessor(new FileLexerSource(inputFile, StandardCharsets.UTF_8));
 
             preprocessor.addMacro("BGFX_SHADER_LANGUAGE_GLSL", "0");
             preprocessor.addMacro("BGFX_SHADER_LANGUAGE_HLSL", "0");

@@ -21,9 +21,11 @@ repositories {
 }
 
 dependencies {
+    implementation project(":bouncycastle")
+    implementation project(":jcpp")
+
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'com.beust:jcommander:1.82'
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
 }
 
 shadowJar {
