@@ -111,15 +111,15 @@ public class Main {
 	}
 
 	private static void compile(Args args) {
+        tempDir = FileUtil.createTempDir();
+        if (tempDir == null) {
+            System.out.println("Error: failed to create temporary directory");
+            return;
+        }
+
 		String compilerPath = findCompilerPath(args.shaderCompilerPath);
 		if (compilerPath == null) {
 			System.out.println("Error: shaderc not found");
-			return;
-		}
-
-		tempDir = FileUtil.createTempDir();
-		if (tempDir == null) {
-			System.out.println("Error: failed to create temporary directory");
 			return;
 		}
 
@@ -142,12 +142,12 @@ public class Main {
 				}
 
 				File outputDir = args.outputDir != null ? args.outputDir : new File(inputFile, "build");
-				if (!outputDir.exists() && !outputDir.mkdirs()) {
-					System.out.println("Error: failed to create output directory");
-					continue;
-				}
-
 				if (dataDir != null && dataDir.exists() && dataDir.isDirectory()) {
+                    if (!outputDir.exists() && !outputDir.mkdirs()) {
+                        System.out.println("Error: failed to create output directory");
+                        continue;
+                    }
+
 					for (File dataJsonFile : dataDir.listFiles()) {
 						String fileName = dataJsonFile.getName();
 						if (!fileName.endsWith(".json")) {
@@ -159,6 +159,11 @@ public class Main {
 					}
 					continue;
 				} else if (dataFile != null && dataFile.exists() && dataFile.isFile()) {
+                    if (!outputDir.exists() && !outputDir.mkdirs()) {
+                        System.out.println("Error: failed to create output directory");
+                        continue;
+                    }
+
 					String fileName = dataFile.getName();
 					if (!fileName.endsWith(".json")) {
 						System.out.println("Warning: " + dataFile.getAbsolutePath() + " is not a json file, skipped");
@@ -473,6 +478,7 @@ public class Main {
 				return compilerPath;
 			}
 		}
+
 		try {
 			Runtime.getRuntime().exec("shaderc");
 			return "shaderc";

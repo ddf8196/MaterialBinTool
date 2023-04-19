@@ -16,14 +16,14 @@ java -jar MaterialBinTool.jar [选项] <输入文件或目录>
   --reorder-variants 将Variant按照Flag重新排序
   --data-only        仅输出包含编译所需的必要数据的json, 不包含着色器(不可打包,仅可用于合并和编译)
   -r, --repack       打包输入目录或json文件为.material.bin文件
-  --raw              输出/输入原始bgfx着色器文件而不是仅着色器代码
+  --raw              输出或输入原始bgfx着色器文件而不是仅着色器代码
   -c, --compile      编译输入目录或json文件为.material.bin文件
   -h, --help         查看帮助
-  -s, --shaderc      指定shaderc可执行文件路径(不指定或指定的文件不存在/不可执行则尝试从PATH环境变量中查找)
+  -s, --shaderc      指定shaderc可执行文件路径(不指定或指定的文件不存在或不可执行则尝试从PATH环境变量中查找,)
   -i, --include      指定着色器编译时的额外包含目录
   --debug            开启调试信息
   -m, --merge-data   合并不同平台的json(仅支持`--data-only`输出的json, 输出目录需手动指定)
-  -o, --output       指定输出目录(不指定则解包默认输出至.material.bin的同级目录,打包/编译默认输出至输入目录或输入json文件的同级目录)
+  -o, --output       指定输出目录(不指定则解包默认输出至.material.bin的同级目录,打包或编译默认输出至输入目录或输入json文件的同级目录)
 ```
 
 ## 编译sc文件
