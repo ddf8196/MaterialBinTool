@@ -1,6 +1,9 @@
 package com.ddf.materialbintool.main.util;
 
-import com.beust.jcommander.*;
+import com.beust.jcommander.DefaultUsageFormatter;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterDescription;
+import com.beust.jcommander.WrappedParameter;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -47,7 +50,7 @@ public class UsageFormatter extends DefaultUsageFormatter {
                 String syntax = "(syntax: " + parameter.names()[0] + "key" + parameter.getAssignment() + "value)";
                 description += (description.length() == 0 ? "" : " ") + syntax;
             }
-            
+
             Class<?> type = pd.getParameterized().getType();
 
             if (type.isEnum()) {

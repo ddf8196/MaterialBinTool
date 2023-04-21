@@ -9,7 +9,7 @@ public class FileUtil {
         try {
             return readAllBytes(new FileInputStream(file));
         } catch (IOException e) {
-             return null;
+            return null;
         }
     }
 

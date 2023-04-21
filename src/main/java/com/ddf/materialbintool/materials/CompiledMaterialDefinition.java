@@ -25,8 +25,8 @@ public class CompiledMaterialDefinition {
         long magic = buf.readLongLE();
         if (magic != MAGIC)
             return;
-		if (!COMPILED_MATERIAL_DEFINITION.equals(buf.readStringLE()))
-			return;
+        if (!COMPILED_MATERIAL_DEFINITION.equals(buf.readStringLE()))
+            return;
         version = buf.readLongLE();
         if (version < 0x16)
             throw new UnsupportedOperationException("Files with version less than 22 are no longer supported");
@@ -34,7 +34,7 @@ public class CompiledMaterialDefinition {
         encryptionVariant = EncryptionVariants.getBySignature(buf.readIntLE());
         switch (encryptionVariant) {
             case None: {
-				loadContent(buf);
+                loadContent(buf);
                 break;
             }
             case SimplePassphrase: {
@@ -45,9 +45,9 @@ public class CompiledMaterialDefinition {
                 }
                 byte[] iv = buf.readByteArrayLE();
                 byte[] encrypted = buf.readByteArrayLE();
-				ByteBuf decrypted = new ByteBuf(Util.decrypt(key, iv, encrypted));
-				loadContent(decrypted);
-				break;
+                ByteBuf decrypted = new ByteBuf(Util.decrypt(key, iv, encrypted));
+                loadContent(decrypted);
+                break;
             }
             case KeyPair: {
                 byte[] data = buf.readByteArrayLE();
@@ -71,9 +71,9 @@ public class CompiledMaterialDefinition {
         samplerDefinitionMap = new LinkedHashMap<>(samplerDefinitionCount);
         for (int i = 0; i < samplerDefinitionCount; i++) {
             String name = buf.readStringLE();
-			SamplerDefinition samplerDefinition = new SamplerDefinition();
-			samplerDefinition.read(buf);
-			samplerDefinitionMap.put(name, samplerDefinition);
+            SamplerDefinition samplerDefinition = new SamplerDefinition();
+            samplerDefinition.read(buf);
+            samplerDefinitionMap.put(name, samplerDefinition);
         }
 
         short propertyFieldCount = buf.readShortLE();
