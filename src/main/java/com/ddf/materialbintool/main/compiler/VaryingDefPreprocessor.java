@@ -2,6 +2,7 @@ package com.ddf.materialbintool.main.compiler;
 
 import com.ddf.materialbintool.main.util.FileUtil;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
+import com.ddf.materialbintool.materials.ShaderCodePlatform;
 import org.anarres.cpp.FileLexerSource;
 import org.anarres.cpp.LexerException;
 import org.anarres.cpp.Preprocessor;
@@ -46,7 +47,7 @@ public class VaryingDefPreprocessor implements AutoCloseable {
             preprocessor.addMacro("BGFX_SHADER_TYPE_FRAGMENT", "0");
             preprocessor.addMacro("BGFX_SHADER_TYPE_VERTEX", "0");
 
-            switch (platformShaderStage.platform) {
+            switch (ShaderCodePlatform.valueOf(platformShaderStage.platformName)) {
                 case Direct3D_SM40:
                     preprocessor.addMacro("BGFX_SHADER_LANGUAGE_HLSL", "400");
                     break;

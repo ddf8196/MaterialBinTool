@@ -1,23 +1,25 @@
 package com.ddf.materialbintool.materials;
 
-import com.ddf.materialbintool.materials.definition.*;
+import com.ddf.materialbintool.materials.definition.BlendMode;
+import com.ddf.materialbintool.materials.definition.PropertyField;
+import com.ddf.materialbintool.materials.definition.SamplerDefinition;
+import com.ddf.materialbintool.materials.definition.ShaderInput;
+import com.ddf.materialbintool.materials.definition.badger.BadgerUniforms;
 import com.ddf.materialbintool.util.ByteBuf;
-import com.ddf.materialbintool.util.Util;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class CompiledMaterialDefinition {
     public static final long MAGIC = 0xA11DA1A;
+    public static final long BADGER_VERSION = 0xBAD9E40000000001L;
     public static final String COMPILED_MATERIAL_DEFINITION = "RenderDragon.CompiledMaterialDefinition";
 
-    public long version;
-    public EncryptionVariants encryptionVariant;
     public String name;
     public boolean hasParentName;
     public String parentName;
 
     public Map<String, SamplerDefinition> samplerDefinitionMap;
+    public List<BadgerUniforms> badgerUniformsList;
     public Map<String, PropertyField> propertyFieldMap;
     public transient Map<String, Pass> passMap;
 
@@ -27,38 +29,10 @@ public class CompiledMaterialDefinition {
             return;
         if (!COMPILED_MATERIAL_DEFINITION.equals(buf.readStringLE()))
             return;
-        version = buf.readLongLE();
-        if (version < 0x16)
-            throw new UnsupportedOperationException("Files with version less than 22 are no longer supported");
-
-        encryptionVariant = EncryptionVariants.getBySignature(buf.readIntLE());
-        switch (encryptionVariant) {
-            case None: {
-                loadContent(buf);
-                break;
-            }
-            case SimplePassphrase: {
-                byte[] digest = Util.sha256("dGhvc2UgYXJlIG5vdCB0aGUgc2hhZGVycyB5b3UgYXJlIGxvb2tpbmcgZm9yISA=".getBytes(StandardCharsets.UTF_8)); /*those are not the shaders you are looking for! */
-                byte[] key = buf.readByteArrayLE();
-                if (!Arrays.equals(key, digest)) {
-                    //???
-                }
-                byte[] iv = buf.readByteArrayLE();
-                byte[] encrypted = buf.readByteArrayLE();
-                ByteBuf decrypted = new ByteBuf(Util.decrypt(key, iv, encrypted));
-                loadContent(decrypted);
-                break;
-            }
-            case KeyPair: {
-                byte[] data = buf.readByteArrayLE();
-                byte[] iv = buf.readByteArrayLE();
-                byte[] encrypted = buf.readByteArrayLE();
-                break;
-            }
-            default: {
-                break;
-            }
-        }
+        long version = buf.readLongLE();
+        if (version != BADGER_VERSION)
+            return;
+        loadContent(buf);
     }
 
     private boolean loadContent(ByteBuf buf) {
@@ -74,6 +48,14 @@ public class CompiledMaterialDefinition {
             SamplerDefinition samplerDefinition = new SamplerDefinition();
             samplerDefinition.read(buf);
             samplerDefinitionMap.put(name, samplerDefinition);
+        }
+
+        int uniformsCount = buf.readUnsignedByte();
+        badgerUniformsList = new ArrayList<>(uniformsCount);
+        for (int i = 0; i < uniformsCount; i++) {
+            BadgerUniforms uniforms = new BadgerUniforms();
+            uniforms.read(buf);
+            badgerUniformsList.add(uniforms);
         }
 
         short propertyFieldCount = buf.readShortLE();
@@ -97,34 +79,11 @@ public class CompiledMaterialDefinition {
         return end == MAGIC;
     }
 
-    public void saveTo(ByteBuf buf, EncryptionVariants encryptionVariant) {
+    public void saveTo(ByteBuf buf) {
         buf.writeLongLE(MAGIC);
         buf.writeStringLE(COMPILED_MATERIAL_DEFINITION);
-        buf.writeLongLE(version);
-        buf.writeIntLE(encryptionVariant.getSignature());
-
-        switch (encryptionVariant) {
-            case None: {
-                saveContent(buf);
-                return;
-            }
-            case SimplePassphrase: {
-                byte[] key = Util.sha256("dGhvc2UgYXJlIG5vdCB0aGUgc2hhZGVycyB5b3UgYXJlIGxvb2tpbmcgZm9yISA=".getBytes(StandardCharsets.UTF_8)); /*those are not the shaders you are looking for! */
-                buf.writeByteArrayLE(key);
-
-                byte[] iv = new byte[16];
-                new Random().nextBytes(iv);
-                buf.writeByteArrayLE(iv);
-
-                ByteBuf byteBuf = new ByteBuf();
-                saveContent(byteBuf);
-
-                buf.writeByteArrayLE(Util.encrypt(key, iv, byteBuf.toByteArray()));
-                return;
-            }
-            case KeyPair:
-                return;
-        }
+        buf.writeLongLE(BADGER_VERSION);
+        saveContent(buf);
     }
 
     private void saveContent(ByteBuf buf) {
@@ -137,6 +96,11 @@ public class CompiledMaterialDefinition {
         for (Map.Entry<String, SamplerDefinition> entry : samplerDefinitionMap.entrySet()) {
             buf.writeStringLE(entry.getKey());
             entry.getValue().write(buf);
+        }
+
+        buf.writeByte(badgerUniformsList.size());
+        for (BadgerUniforms uniforms : badgerUniformsList) {
+            uniforms.write(buf);
         }
 
         buf.writeShortLE(propertyFieldMap.size());
@@ -159,9 +123,7 @@ public class CompiledMaterialDefinition {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CompiledMaterialDefinition that = (CompiledMaterialDefinition) o;
-        return version == that.version
-                && hasParentName == that.hasParentName
-                && encryptionVariant == that.encryptionVariant
+        return hasParentName == that.hasParentName
                 && Objects.equals(name, that.name)
                 && Objects.equals(parentName, that.parentName)
                 && Objects.equals(samplerDefinitionMap, that.samplerDefinitionMap)
@@ -171,11 +133,11 @@ public class CompiledMaterialDefinition {
 
     @Override
     public int hashCode() {
-        return Objects.hash(version, encryptionVariant, name, hasParentName, parentName, samplerDefinitionMap, propertyFieldMap, passMap);
+        return Objects.hash(name, hasParentName, parentName, samplerDefinitionMap, propertyFieldMap, passMap);
     }
 
     public static class Pass {
-        public String bitSet; //111111111111111 / 011111010111110 / 000000100000000
+        public byte graphicsProfile;
         public String fallback;  //空字符串 / Fallback / DoCheckerboarding
 
         public boolean hasDefaultBlendMode;
@@ -188,7 +150,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void read(ByteBuf buf) {
-            bitSet = buf.readStringLE();
+            graphicsProfile = buf.readByte();
             fallback = buf.readStringLE();
 
             hasDefaultBlendMode = buf.readBoolean();
@@ -214,7 +176,7 @@ public class CompiledMaterialDefinition {
         }
 
         public void write(ByteBuf buf) {
-            buf.writeStringLE(bitSet);
+            buf.writeByte(graphicsProfile);
             buf.writeStringLE(fallback);
 
             buf.writeBoolean(hasDefaultBlendMode);
@@ -240,7 +202,7 @@ public class CompiledMaterialDefinition {
             if (o == null || getClass() != o.getClass()) return false;
             Pass pass = (Pass) o;
             return hasDefaultBlendMode == pass.hasDefaultBlendMode
-                    && Objects.equals(bitSet, pass.bitSet)
+                    && graphicsProfile == pass.graphicsProfile
                     && Objects.equals(fallback, pass.fallback)
                     && defaultBlendMode == pass.defaultBlendMode
                     && Objects.equals(flagDefaultValues, pass.flagDefaultValues)
@@ -249,7 +211,7 @@ public class CompiledMaterialDefinition {
 
         @Override
         public int hashCode() {
-            return Objects.hash(bitSet, fallback, hasDefaultBlendMode, defaultBlendMode, flagDefaultValues, variantList);
+            return Objects.hash(graphicsProfile, fallback, hasDefaultBlendMode, defaultBlendMode, flagDefaultValues, variantList);
         }
     }
 

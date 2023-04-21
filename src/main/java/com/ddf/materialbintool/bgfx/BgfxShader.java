@@ -1,5 +1,6 @@
 package com.ddf.materialbintool.bgfx;
 
+import com.ddf.materialbintool.bgfx.badger.BadgerUnknownData;
 import com.ddf.materialbintool.util.ByteBuf;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 public abstract class BgfxShader {
     protected int magic;
     protected int hash;
+    protected List<BadgerUnknownData> unknownData;
     protected List<Uniform> uniforms;
     protected transient byte[] code;
 
@@ -41,9 +43,17 @@ public abstract class BgfxShader {
         magic = buf.readInt();
         hash = buf.readIntLE();
 
+        short unkCount = buf.readShortLE();
+        unknownData = new ArrayList<>(unkCount);
+        for (int i = 0; i < unkCount; i++) {
+            BadgerUnknownData data = new BadgerUnknownData();
+            data.read(buf);
+            unknownData.add(data);
+        }
+
         short count = buf.readShortLE();
-        uniforms = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
+        uniforms = new ArrayList<>(count);
+        for (int j = 0; j < count; j++) {
             Uniform uniform = new Uniform();
             uniform.readFrom(buf);
             uniforms.add(uniform);
@@ -56,6 +66,11 @@ public abstract class BgfxShader {
     public void write(ByteBuf buf) {
         buf.writeInt(magic);
         buf.writeIntLE(hash);
+
+        buf.writeShortLE(unknownData.size());
+        for (BadgerUnknownData data : unknownData) {
+            data.write(buf);
+        }
 
         buf.writeShortLE(uniforms.size());
         for (Uniform uniform : uniforms) {

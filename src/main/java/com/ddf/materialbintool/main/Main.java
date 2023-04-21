@@ -12,7 +12,7 @@ import com.ddf.materialbintool.main.util.StringUtil;
 import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
-import com.ddf.materialbintool.materials.definition.EncryptionVariants;
+import com.ddf.materialbintool.materials.ShaderCodePlatform;
 import com.ddf.materialbintool.util.ByteBuf;
 import com.google.gson.*;
 
@@ -109,7 +109,7 @@ public class Main {
             System.out.println("Repacking " + outputFile.getName());
             CompiledMaterialDefinition cmd = loadCompiledMaterialDefinition(jsonFile, true, args.raw, false);
             ByteBuf buf = new ByteBuf();
-            cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
+            cmd.saveTo(buf);
             FileUtil.write(outputFile, buf.toByteArray());
         }
     }
@@ -330,7 +330,7 @@ public class Main {
                     }
 
                     if (!multiThread) {
-                        byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
+                        byte[] compiled = compiler.compile(input, varyingDef, defines, ShaderCodePlatform.valueOf(platformShaderStage.platformName), platformShaderStage.stage);
                         if (compiled == null) {
                             System.out.println("Compilation failed");
                             preprocessor.close();
@@ -345,7 +345,7 @@ public class Main {
                             taskQueue.put(() -> {
                                 if (failed.get())
                                     return;
-                                byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
+                                byte[] compiled = compiler.compile(input, varyingDef, defines, ShaderCodePlatform.valueOf(platformShaderStage.platformName), platformShaderStage.stage);
                                 if (compiled == null) {
                                     failed.set(true);
                                     return;
@@ -377,7 +377,7 @@ public class Main {
         }
 
         ByteBuf buf = new ByteBuf();
-        cmd.saveTo(buf, args.encrypt ? EncryptionVariants.SimplePassphrase : EncryptionVariants.None);
+        cmd.saveTo(buf);
         FileUtil.write(outputFile, buf.toByteArray());
     }
 
@@ -427,9 +427,7 @@ public class Main {
                 merged = cmd;
                 continue;
             }
-            if (merged.version == cmd.version
-                    && merged.hasParentName == cmd.hasParentName
-                    && merged.encryptionVariant == cmd.encryptionVariant
+            if (merged.hasParentName == cmd.hasParentName
                     && Objects.equals(merged.name, cmd.name)
                     && Objects.equals(merged.parentName, cmd.parentName)
 //					&& Objects.equals(merged.samplerDefinitionMap, cmd.samplerDefinitionMap)
@@ -443,7 +441,7 @@ public class Main {
                     CompiledMaterialDefinition.Pass pass2 = cmd.passMap.get(passEntry.getKey());
 
                     if (pass1.hasDefaultBlendMode == pass2.hasDefaultBlendMode
-                            && Objects.equals(pass1.bitSet, pass2.bitSet)
+                            && pass1.graphicsProfile == pass2.graphicsProfile
                             && Objects.equals(pass1.fallback, pass2.fallback)
                             && pass1.defaultBlendMode == pass2.defaultBlendMode
                             && Objects.equals(pass1.flagDefaultValues, pass2.flagDefaultValues)

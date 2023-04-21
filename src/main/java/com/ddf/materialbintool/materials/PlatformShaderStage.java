@@ -9,29 +9,22 @@ public class PlatformShaderStage {
     public String stageName;
     public String platformName;
     public ShaderStage stage;
-    public ShaderCodePlatform platform;
+    public byte platform;
 
     public PlatformShaderStage() {}
-
-    public PlatformShaderStage(ShaderStage stage, ShaderCodePlatform platform) {
-        this.stage = stage;
-        this.platform = platform;
-        this.stageName = stage.name();
-        this.platformName = platform.name();
-    }
 
     public void read(ByteBuf buf) {
         stageName = buf.readStringLE();
         platformName = buf.readStringLE();
         stage = ShaderStage.get(buf.readByte());
-        platform = ShaderCodePlatform.get(buf.readByte());
+        platform = buf.readByte();
     }
 
     public void write(ByteBuf buf) {
         buf.writeStringLE(stageName);
         buf.writeStringLE(platformName);
         buf.writeByte(stage.ordinal());
-        buf.writeByte(platform.ordinal());
+        buf.writeByte(platform);
     }
 
     @Override

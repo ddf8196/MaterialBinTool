@@ -5,15 +5,12 @@ import com.ddf.materialbintool.util.ByteBuf;
 import java.util.Objects;
 
 public class SamplerDefinition {
-    public short reg;
+    public byte reg;
     public SamplerAccess access;
     public byte precision;
     public boolean allowUnorderedAccess;
     public SamplerType type;
     public String textureFormat; //空字符串 / rgba16f / rgba8 / rg16f / r32ui
-
-    public int unknownInt; //1
-    public byte unknownByte;
 
     public boolean hasDefaultTexture;
     public String defaultTexture; //white
@@ -25,14 +22,12 @@ public class SamplerDefinition {
     }
 
     public void read(ByteBuf buf) {
-        reg = buf.readShortLE();
+        reg = buf.readByte();
         access = SamplerAccess.get(buf.readByte());
         precision = buf.readByte();
         allowUnorderedAccess = buf.readBoolean();
         type = SamplerType.get(buf.readByte());
         textureFormat = buf.readStringLE();
-        unknownInt = buf.readIntLE(); //1
-        unknownByte = buf.readByte();
 
         hasDefaultTexture = buf.readBoolean();
         if (hasDefaultTexture) {
@@ -48,14 +43,12 @@ public class SamplerDefinition {
     }
 
     public void write(ByteBuf buf) {
-        buf.writeShortLE(reg);
+        buf.writeByte(reg);
         buf.writeByte(access.ordinal());
         buf.writeByte(precision);
         buf.writeBoolean(allowUnorderedAccess);
         buf.writeByte(type.ordinal());
         buf.writeStringLE(textureFormat);
-        buf.writeIntLE(unknownInt);
-        buf.writeByte(unknownByte);
 
         buf.writeBoolean(hasDefaultTexture);
         if (hasDefaultTexture) {
@@ -79,8 +72,6 @@ public class SamplerDefinition {
                 && precision == that.precision
                 && allowUnorderedAccess == that.allowUnorderedAccess
                 && type == that.type
-                && unknownInt == that.unknownInt
-                && unknownByte == that.unknownByte
                 && hasDefaultTexture == that.hasDefaultTexture
                 && hasCustomTypeInfo == that.hasCustomTypeInfo
                 && Objects.equals(textureFormat, that.textureFormat)
@@ -90,7 +81,7 @@ public class SamplerDefinition {
 
     @Override
     public int hashCode() {
-        return Objects.hash(reg, access, precision, allowUnorderedAccess, type, textureFormat, unknownInt, unknownByte, hasDefaultTexture, defaultTexture, hasCustomTypeInfo, customTypeInfo);
+        return Objects.hash(reg, access, precision, allowUnorderedAccess, type, textureFormat, hasDefaultTexture, defaultTexture, hasCustomTypeInfo, customTypeInfo);
     }
 
     public static class CustomTypeInfo {
