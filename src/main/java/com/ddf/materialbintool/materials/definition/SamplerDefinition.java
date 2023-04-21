@@ -80,6 +80,7 @@ public class SamplerDefinition {
                 && allowUnorderedAccess == that.allowUnorderedAccess
                 && type == that.type
                 && unknownInt == that.unknownInt
+                && unknownByte == that.unknownByte
                 && hasDefaultTexture == that.hasDefaultTexture
                 && hasCustomTypeInfo == that.hasCustomTypeInfo
                 && Objects.equals(textureFormat, that.textureFormat)
@@ -89,7 +90,7 @@ public class SamplerDefinition {
 
     @Override
     public int hashCode() {
-        return Objects.hash(reg, access, precision, allowUnorderedAccess, type, textureFormat, unknownInt, hasDefaultTexture, defaultTexture, hasCustomTypeInfo, customTypeInfo);
+        return Objects.hash(reg, access, precision, allowUnorderedAccess, type, textureFormat, unknownInt, unknownByte, hasDefaultTexture, defaultTexture, hasCustomTypeInfo, customTypeInfo);
     }
 
     public static class CustomTypeInfo {

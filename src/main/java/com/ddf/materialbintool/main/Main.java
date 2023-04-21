@@ -129,7 +129,7 @@ public class Main {
 
         for (File inputFile : args.inputFiles) {
             if (!inputFile.exists()) {
-                System.out.println("Error: input file does not exist");
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" does not exist");
                 continue;
             }
 
@@ -196,7 +196,7 @@ public class Main {
     }
 
     private static void compileFile(Args args, String compilerPath, File rootDir, File jsonFile, File outputFile) {
-        System.out.println("Compiling " + outputFile.getName());
+        System.out.println("Compiling file " + outputFile.getName());
 
         String name = jsonFile.getName().substring(0, jsonFile.getName().indexOf(".json"));
         File srcDir = new File(rootDir, "src");
@@ -264,7 +264,7 @@ public class Main {
         passLoop:
         for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : cmd.passMap.entrySet()) {
             String passName = passEntry.getKey();
-            System.out.println("Compiling " + passName);
+            System.out.println("Compiling pass " + passName);
             for (CompiledMaterialDefinition.Variant variant : passEntry.getValue().variantList) {
                 for (Map.Entry<PlatformShaderStage, CompiledMaterialDefinition.ShaderCode> entry : variant.shaderCodeMap.entrySet()) {
                     PlatformShaderStage platformShaderStage = entry.getKey();
@@ -332,7 +332,7 @@ public class Main {
                     if (!multiThread) {
                         byte[] compiled = compiler.compile(input, varyingDef, defines, platformShaderStage.platform, platformShaderStage.stage);
                         if (compiled == null) {
-                            System.out.println("Compilation failure");
+                            System.out.println("Compilation failed");
                             preprocessor.close();
                             return;
                         }
@@ -359,7 +359,6 @@ public class Main {
                 }
             }
         }
-        preprocessor.close();
 
         if (multiThread) {
             try {
@@ -370,8 +369,10 @@ public class Main {
             } catch (InterruptedException ignored) {
             }
         }
+        preprocessor.close();
+
         if (multiThread && failed.get()) {
-            System.out.println("Compilation failure");
+            System.out.println("Compilation failed");
             return;
         }
 
