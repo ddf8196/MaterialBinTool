@@ -1,7 +1,7 @@
 package com.ddf.materialbintool.main.json;
 
 public enum FormatVersion {
-    V1;
+    BADGER_V1;
 
     public static boolean contains(String name) {
         for (FormatVersion formatVersion : values()) {

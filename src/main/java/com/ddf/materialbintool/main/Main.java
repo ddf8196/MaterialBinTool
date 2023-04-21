@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
-    public static final FormatVersion CURRENT_FORMAT_VERSION = FormatVersion.V1;
+    public static final FormatVersion CURRENT_FORMAT_VERSION = FormatVersion.BADGER_V1;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static File tempDir;
@@ -690,7 +690,7 @@ public class Main {
         JsonObject jsonObject = JsonParser.parseString(FileUtil.readString(jsonFile)).getAsJsonObject();
 
         FormatVersion formatVersion;
-        String formatVersionStr = jsonObject.has("formatVersion") ? jsonObject.get("formatVersion").getAsString() : FormatVersion.V1.name();
+        String formatVersionStr = jsonObject.has("formatVersion") ? jsonObject.get("formatVersion").getAsString() : FormatVersion.BADGER_V1.name();
         if (FormatVersion.contains(formatVersionStr)) {
             formatVersion = FormatVersion.valueOf(formatVersionStr);
         } else {
