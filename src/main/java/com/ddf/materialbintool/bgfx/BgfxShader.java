@@ -1,15 +1,19 @@
 package com.ddf.materialbintool.bgfx;
 
-import com.ddf.materialbintool.bgfx.badger.BadgerUnknownData;
 import com.ddf.materialbintool.util.ByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BgfxShader {
+    public static final int BGFX_SHADER_BIN_VERSION = 5;
+    public static final int BGFX_CHUNK_MAGIC_CSH = 0x43534800/*CSH*/ | BGFX_SHADER_BIN_VERSION;
+    public static final int BGFX_CHUNK_MAGIC_FSH = 0x46534800/*FSH*/ | BGFX_SHADER_BIN_VERSION;
+    public static final int BGFX_CHUNK_MAGIC_VSH = 0x56534800/*VSH*/ | BGFX_SHADER_BIN_VERSION;
+
     protected int magic;
     protected int hash;
-    protected List<BadgerUnknownData> unknownData;
+    protected List<UniformBlock> uniformBlocks;
     protected List<Uniform> uniforms;
     protected transient byte[] code;
 
@@ -43,17 +47,17 @@ public abstract class BgfxShader {
         magic = buf.readInt();
         hash = buf.readIntLE();
 
-        short unkCount = buf.readShortLE();
-        unknownData = new ArrayList<>(unkCount);
-        for (int i = 0; i < unkCount; i++) {
-            BadgerUnknownData data = new BadgerUnknownData();
-            data.read(buf);
-            unknownData.add(data);
+        short uniformBlockCount = buf.readShortLE();
+        uniformBlocks = new ArrayList<>(uniformBlockCount);
+        for (int i = 0; i < uniformBlockCount; i++) {
+            UniformBlock uniformBlock = new UniformBlock();
+            uniformBlock.read(buf);
+            uniformBlocks.add(uniformBlock);
         }
 
-        short count = buf.readShortLE();
-        uniforms = new ArrayList<>(count);
-        for (int j = 0; j < count; j++) {
+        short uniformCount = buf.readShortLE();
+        uniforms = new ArrayList<>(uniformCount);
+        for (int j = 0; j < uniformCount; j++) {
             Uniform uniform = new Uniform();
             uniform.readFrom(buf);
             uniforms.add(uniform);
@@ -67,9 +71,9 @@ public abstract class BgfxShader {
         buf.writeInt(magic);
         buf.writeIntLE(hash);
 
-        buf.writeShortLE(unknownData.size());
-        for (BadgerUnknownData data : unknownData) {
-            data.write(buf);
+        buf.writeShortLE(uniformBlocks.size());
+        for (UniformBlock uniformBlock : uniformBlocks) {
+            uniformBlock.write(buf);
         }
 
         buf.writeShortLE(uniforms.size());

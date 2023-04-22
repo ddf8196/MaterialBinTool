@@ -4,7 +4,7 @@ import com.ddf.materialbintool.materials.definition.BlendMode;
 import com.ddf.materialbintool.materials.definition.PropertyField;
 import com.ddf.materialbintool.materials.definition.SamplerDefinition;
 import com.ddf.materialbintool.materials.definition.ShaderInput;
-import com.ddf.materialbintool.materials.definition.badger.BadgerUniforms;
+import com.ddf.materialbintool.materials.definition.BadgerUniformBlock;
 import com.ddf.materialbintool.util.ByteBuf;
 
 import java.util.*;
@@ -19,7 +19,7 @@ public class CompiledMaterialDefinition {
     public String parentName;
 
     public Map<String, SamplerDefinition> samplerDefinitionMap;
-    public List<BadgerUniforms> badgerUniformsList;
+    public List<BadgerUniformBlock> uniformBlockList;
     public Map<String, PropertyField> propertyFieldMap;
     public transient Map<String, Pass> passMap;
 
@@ -50,12 +50,12 @@ public class CompiledMaterialDefinition {
             samplerDefinitionMap.put(name, samplerDefinition);
         }
 
-        int uniformsCount = buf.readUnsignedByte();
-        badgerUniformsList = new ArrayList<>(uniformsCount);
-        for (int i = 0; i < uniformsCount; i++) {
-            BadgerUniforms uniforms = new BadgerUniforms();
+        int uniformBlockCount = buf.readUnsignedByte();
+        uniformBlockList = new ArrayList<>(uniformBlockCount);
+        for (int i = 0; i < uniformBlockCount; i++) {
+            BadgerUniformBlock uniforms = new BadgerUniformBlock();
             uniforms.read(buf);
-            badgerUniformsList.add(uniforms);
+            uniformBlockList.add(uniforms);
         }
 
         short propertyFieldCount = buf.readShortLE();
@@ -98,9 +98,9 @@ public class CompiledMaterialDefinition {
             entry.getValue().write(buf);
         }
 
-        buf.writeByte(badgerUniformsList.size());
-        for (BadgerUniforms uniforms : badgerUniformsList) {
-            uniforms.write(buf);
+        buf.writeByte(uniformBlockList.size());
+        for (BadgerUniformBlock uniformBlock : uniformBlockList) {
+            uniformBlock.write(buf);
         }
 
         buf.writeShortLE(propertyFieldMap.size());
