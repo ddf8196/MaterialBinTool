@@ -153,6 +153,9 @@ public class Main {
                     }
 
                     for (File dataJsonFile : dataDir.listFiles()) {
+                        if (!dataJsonFile.isFile()) {
+                            continue;
+                        }
                         String fileName = dataJsonFile.getName();
                         if (!fileName.endsWith(".json")) {
                             System.out.println("Warning: " + dataJsonFile.getAbsolutePath() + " is not a json file, skipped");

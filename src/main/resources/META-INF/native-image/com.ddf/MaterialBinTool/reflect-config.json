@@ -23,6 +23,16 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.beust.jcommander.converters.FileConverter",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.beust.jcommander.converters.IntegerConverter",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+},
+{
   "name":"com.beust.jcommander.converters.StringConverter",
   "queryAllDeclaredConstructors":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
@@ -107,11 +117,6 @@
   "allDeclaredFields":true
 },
 {
-  "name":"com.ddf.materialbintool.materials.definition.FlagMode",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"com.ddf.materialbintool.materials.definition.InterpolationConstraint",
   "allDeclaredFields":true
 },
@@ -125,6 +130,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.ddf.materialbintool.materials.definition.SamplerAccess",
+  "allDeclaredFields":true
+},
+{
   "name":"com.ddf.materialbintool.materials.definition.SamplerDefinition",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
@@ -132,7 +141,11 @@
 {
   "name":"com.ddf.materialbintool.materials.definition.SamplerDefinition$CustomTypeInfo",
   "allDeclaredFields":true,
-  "queriedMethods":[{"name":"<init>","parameterTypes":[] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.ddf.materialbintool.materials.definition.SamplerType",
+  "allDeclaredFields":true
 },
 {
   "name":"com.ddf.materialbintool.materials.definition.ShaderInput",
@@ -152,8 +165,16 @@
   "allDeclaredFields":true
 },
 {
+  "name":"int",
+  "allDeclaredFields":true
+},
+{
   "name":"java.io.Console",
   "methods":[{"name":"writer","parameterTypes":[] }]
+},
+{
+  "name":"java.io.File",
+  "allDeclaredFields":true
 },
 {
   "name":"java.lang.String",
