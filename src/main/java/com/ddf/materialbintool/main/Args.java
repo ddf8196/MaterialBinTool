@@ -15,8 +15,8 @@ public class Args {
     @Parameter(names = {"-a", "--add-flags"})
     public boolean addFlagsToCode = false;
 
-    @Parameter(names = {"--reorder-variants"})
-    public boolean reorderVariants = false;
+    @Parameter(names = {"--sort-variants"})
+    public boolean sortVariants = false;
 
     @Parameter(names = {"--raw"})
     public boolean raw;
@@ -38,6 +38,9 @@ public class Args {
 
     @Parameter(names = {"-t", "--threads"})
     public int threads = 1;
+
+    @Parameter(names = {"--optimization-level"})
+    public int optimizationLevel = 3;
 
     @Parameter(names = {"--data"})
     public File dataFile;

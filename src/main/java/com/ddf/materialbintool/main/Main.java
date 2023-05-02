@@ -74,12 +74,12 @@ public class Main {
 
             if (inputFile.isFile() && inputFile.getName().endsWith(".material.bin")) {
                 System.out.println("Unpacking " + inputFile.getName());
-                unpack(inputFile, args.outputDir, args.addFlagsToCode, args.reorderVariants, args.raw, args.dataOnly);
+                unpack(inputFile, args.outputDir, args.addFlagsToCode, args.sortVariants, args.raw, args.dataOnly);
             } else if (inputFile.isDirectory()) {
                 for (File file : inputFile.listFiles()) {
                     if (file.getName().endsWith(".material.bin")) {
                         System.out.println("Unpacking " + file.getName());
-                        unpack(file, args.outputDir, args.addFlagsToCode, args.reorderVariants, args.raw, args.dataOnly);
+                        unpack(file, args.outputDir, args.addFlagsToCode, args.sortVariants, args.raw, args.dataOnly);
                     }
                 }
             } else {
@@ -249,6 +249,11 @@ public class Main {
             for (String p : args.includePath) {
                 compiler.addIncludePath(p);
             }
+        }
+        if (args.optimizationLevel >= 0 && args.optimizationLevel <= 3) {
+            compiler.setOptimizationLevel(args.optimizationLevel);
+        } else {
+            compiler.setOptimize(false);
         }
         compiler.setDebug(args.debug);
 
@@ -551,12 +556,12 @@ public class Main {
         }
     }
 
-    public static void unpack(File inputFile, File outputDir, boolean addFlagsToCode, boolean reorder, boolean raw, boolean dataOnly) {
+    public static void unpack(File inputFile, File outputDir, boolean addFlagsToCode, boolean sortVariants, boolean raw, boolean dataOnly) {
         ByteBuf buf = new ByteBuf(FileUtil.readAllBytes(inputFile));
         CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
         cmd.loadFrom(buf);
 
-        if (reorder) {
+        if (sortVariants) {
             for (CompiledMaterialDefinition.Pass pass : cmd.passMap.values()) {
                 if (pass.variantList.isEmpty())
                     continue;
