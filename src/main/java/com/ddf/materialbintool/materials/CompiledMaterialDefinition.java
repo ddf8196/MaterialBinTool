@@ -175,8 +175,8 @@ public class CompiledMaterialDefinition {
     }
 
     public static class Pass {
-        public String bitSet; //111111111111111 / 011111010111110 / 000000100000000
-        public String fallback;  //空字符串 / Fallback / DoCheckerboarding
+        public String bitSet; //platformSupport
+        public String fallback;
 
         public boolean hasDefaultBlendMode;
         public BlendMode defaultBlendMode;

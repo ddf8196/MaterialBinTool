@@ -15,7 +15,8 @@ public enum ShaderCodePlatform {
     Metal,         //iOS
     Vulkan,        //Nintendo Switch
     Nvn,           //?
-    Pssl;          //?
+    Pssl,          //?
+    Unknown;       //?
 
     public static ShaderCodePlatform get(int i) {
         return values()[i];
