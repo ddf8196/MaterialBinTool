@@ -104,20 +104,5 @@ sc is BGFX's GLSL-based cross-platform shader language(`bgfx's shaderc flavor of
 Most of the syntax GLSL is the same, but there are some differences, and it needs to be written according to BGFX standards, the specific differences can be found in the bgfx documentation: [shader-compiler-shaderc](https://bkaradzic.github.io/bgfx/tools.html#shader-compiler-shaderc)
 
 ## sc source files
-Some sc source files that have been sorted out by [OEOTYAN](https://github.com/OEOTYAN/) can be obtained in the [RenderDragonSorceCodeInv](https://github.com/OEOTYAN/RenderDragonSorceCodeInv) repository. (This repository is now inaccessible, but you can still find a fork of it somewhere.)   
+Some sc source files that have been sorted out can be obtained in the [RenderDragonSourceCodeInv](https://github.com/SurvivalApparatusCommunication/RenderDragonSourceCodeInv) repository.   
 Other source files (except RTX-related) can be manually organized, according to the .material.bin unpacked glsl in the Android version.
-
-
-
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-
-[~~somewhere~~](https://codeberg.org/ddf8196/RenderDragonSourceCodeInv)

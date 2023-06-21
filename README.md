@@ -92,20 +92,5 @@ sc是bgfx的基于GLSL的跨平台着色器(`bgfx's shaderc flavor of GLSL`), �
 sc的大多数语法GLSL相同, 但也有部分区别, 编写时需要按照bgfx的标准, 具体区别可在bgfx的文档查看: [shader-compiler-shaderc](https://bkaradzic.github.io/bgfx/tools.html#shader-compiler-shaderc)
 
 ## sc着色器源文件获取
-可在[RenderDragonSorceCodeInv](https://github.com/OEOTYAN/RenderDragonSorceCodeInv) 仓库中获取部分已经整理好的sc源文件(此仓库现已无法访问, 可在某些地方找到备份)
+可在[RenderDragonSourceCodeInv](https://github.com/SurvivalApparatusCommunication/RenderDragonSourceCodeInv) 仓库中获取部分已经整理好的sc源文件
 其他源文件(RTX相关的除外)可根据安卓版的.material.bin解包出的glsl自行手动整理   
-
-
-
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-
-[~~某些地方~~](https://codeberg.org/ddf8196/RenderDragonSourceCodeInv)
