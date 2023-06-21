@@ -95,7 +95,7 @@ public class BgfxShaderCompiler {
         command.add(toTypeString(stage));
 
         command.add("--profile");
-        command.add(toProfileString(platform, stage));
+        command.add(toProfileString(platform));
 
         if (optimize) {
             command.add("-O");
@@ -153,30 +153,14 @@ public class BgfxShaderCompiler {
         }
     }
 
-    private static String toProfileString(ShaderCodePlatform platform, ShaderStage stage) {
-        String prefix = "";
-        switch (stage) {
-            case Vertex:
-                prefix = "v";
-                break;
-            case Fragment:
-                prefix = "p";
-                break;
-            case Compute:
-                prefix = "c";
-                break;
-            case Unknown:
-                prefix = "p";
-                break;
-        }
-
+    private static String toProfileString(ShaderCodePlatform platform) {
         switch (platform) {
             case Direct3D_SM40:
-                return prefix + "s_4_0";
+                return "s_4_0";
             case Direct3D_SM50:
             case Direct3D_SM60:
             case Direct3D_SM65:
-                return prefix + "s_5_0";
+                return "s_5_0";
             case GLSL_120:
                 return "120";
             case GLSL_430:

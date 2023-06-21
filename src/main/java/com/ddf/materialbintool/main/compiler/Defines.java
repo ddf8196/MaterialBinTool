@@ -14,6 +14,10 @@ public class Defines {
         defines.put(key, value);
     }
 
+    public Map<String, String> getDefines() {
+        return defines;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
