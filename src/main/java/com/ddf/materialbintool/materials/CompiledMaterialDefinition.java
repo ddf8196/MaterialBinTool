@@ -53,7 +53,12 @@ public class CompiledMaterialDefinition {
                 byte[] data = buf.readByteArrayLE();
                 byte[] iv = buf.readByteArrayLE();
                 byte[] encrypted = buf.readByteArrayLE();
-                break;
+                //1. Decrypt the data array using the RSA-1024 algorithm with a hardcoded private key
+                //2. Compute SHA-256 of the decrypted data array as the decryption key
+                //3. Decrypt the encrypted array using the AES-256-GCM algorithm
+                //4. Load the decrypted array
+
+                throw new RuntimeException("KeyPair encryption is not currently supported");
             }
             default: {
                 break;
@@ -123,7 +128,7 @@ public class CompiledMaterialDefinition {
                 return;
             }
             case KeyPair:
-                return;
+                throw new RuntimeException("KeyPair encryption is not currently supported");
         }
     }
 

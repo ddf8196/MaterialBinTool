@@ -60,6 +60,8 @@ public class Main {
             compile(args);
         } else if (args.mergeData) {
             mergeData(args);
+        } else if (args.mergeBin) {
+            mergeBin(args);
         } else {
             jCommander.usage();
         }
@@ -68,7 +70,7 @@ public class Main {
     private static void unpack(Args args) {
         for (File inputFile : args.inputFiles) {
             if (!inputFile.exists()) {
-                System.out.println("Error: input file does not exist");
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" does not exist");
                 continue;
             }
 
@@ -83,7 +85,7 @@ public class Main {
                     }
                 }
             } else {
-                System.out.println("Error: the input file is not a .material.bin file or directory");
+                System.out.println("Error: the input file \"" + inputFile.getPath() + "\" is not a .material.bin file or directory");
             }
         }
     }
@@ -91,14 +93,14 @@ public class Main {
     private static void repack(Args args) {
         for (File inputFile : args.inputFiles) {
             if (!inputFile.exists()) {
-                System.out.println("Error: input file does not exist");
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" does not exist");
                 continue;
             }
 
             File jsonFile = getInputJsonFile(inputFile);
             File outputFile = getRepackOutputFile(inputFile, args.outputDir);
             if (jsonFile == null) {
-                System.out.println("Error: failed to get input file");
+                System.out.println("Error: failed to get json for input file \"" + inputFile.getPath() + "\"");
                 return;
             }
             if (outputFile == null) {
@@ -185,7 +187,7 @@ public class Main {
             File jsonFile = getInputJsonFile(inputFile);
             File outputFile = getRepackOutputFile(inputFile, args.outputDir);
             if (jsonFile == null) {
-                System.out.println("Error: failed to get input file");
+                System.out.println("Error: failed to get json for input file \"" + inputFile.getPath() + "\"");
                 continue;
             }
             if (outputFile == null) {
@@ -411,11 +413,15 @@ public class Main {
         CompiledMaterialDefinition merged = null;
         for (File inputFile : args.inputFiles) {
             if (!inputFile.exists()) {
-                System.out.println("Error: input file does not exist");
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" does not exist");
                 return;
             }
             if (!inputFile.isFile() || !inputFile.canRead()) {
-                System.out.println("Error: input file not readable");
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" is not readable");
+                return;
+            }
+            if (!inputFile.getName().endsWith(".json")) {
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" is not a json file");
                 return;
             }
 
@@ -467,22 +473,118 @@ public class Main {
                                 }
                             }
                             if (!found) {
-                                System.out.println("Merge failure : no variant with the same flags found");
+                                System.out.println("Merge failed : no variant with the same flags found");
                                 return;
                             }
                         }
                     } else {
-                        System.out.println("Merge failure: pass " + passEntry.getKey() + " not same");
+                        System.out.println("Merge failed: pass " + passEntry.getKey() + " not same");
                         return;
                     }
                 }
             } else {
-                System.out.println("Merge failure: CompiledMaterialDefinition not same");
+                System.out.println("Merge failed: CompiledMaterialDefinition not same");
                 return;
             }
         }
 
         saveCompiledMaterialDefinition(merged, name, outputDir, false, false, true);
+    }
+
+    private static void mergeBin(Args args) {
+        if (args.inputFiles.size() < 2) {
+            return;
+        }
+        File outputDir = args.outputDir;
+        if (outputDir == null) {
+            System.out.println("Error: output directory not specified");
+            return;
+        }
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
+            System.out.println("Error: failed to create output directory");
+            return;
+        }
+        if (!outputDir.isDirectory()) {
+            System.out.println("Error: output is not a directory");
+            return;
+        }
+
+        String name = null;
+        CompiledMaterialDefinition merged = null;
+        for (File inputFile : args.inputFiles) {
+            if (!inputFile.exists()) {
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" does not exist");
+                return;
+            }
+            if (!inputFile.isFile() || !inputFile.canRead()) {
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" is not readable");
+                return;
+            }
+            if (!inputFile.getName().endsWith(".material.bin")) {
+                System.out.println("Error: input file \"" + inputFile.getPath() + "\" is not a .material.bin file");
+                return;
+            }
+
+            System.out.println("Merging " + inputFile.getAbsolutePath());
+
+            CompiledMaterialDefinition cmd = new CompiledMaterialDefinition();
+            cmd.loadFrom(new ByteBuf(FileUtil.readAllBytes(inputFile)));
+            if (merged == null) {
+                name = inputFile.getName();
+                merged = cmd;
+                continue;
+            }
+            if (merged.version == cmd.version
+                    && merged.hasParentName == cmd.hasParentName
+                    && merged.encryptionVariant == cmd.encryptionVariant
+                    && Objects.equals(merged.name, cmd.name)
+                    && Objects.equals(merged.parentName, cmd.parentName)
+					&& Objects.equals(merged.samplerDefinitionMap, cmd.samplerDefinitionMap)
+                    && Objects.equals(merged.propertyFieldMap, cmd.propertyFieldMap)
+                    && merged.passMap != null && cmd.passMap != null
+                    && merged.passMap.size() == cmd.passMap.size()) {
+
+                for (Map.Entry<String, CompiledMaterialDefinition.Pass> passEntry : merged.passMap.entrySet()) {
+                    CompiledMaterialDefinition.Pass pass1 = passEntry.getValue();
+                    CompiledMaterialDefinition.Pass pass2 = cmd.passMap.get(passEntry.getKey());
+
+                    if (pass1.hasDefaultBlendMode == pass2.hasDefaultBlendMode
+                            && Objects.equals(pass1.bitSet, pass2.bitSet)
+                            && Objects.equals(pass1.fallback, pass2.fallback)
+                            && pass1.defaultBlendMode == pass2.defaultBlendMode
+                            && Objects.equals(pass1.flagDefaultValues, pass2.flagDefaultValues)
+                            && pass1.variantList != null && pass2.variantList != null
+                            && pass1.variantList.size() == pass2.variantList.size()) {
+                        for (CompiledMaterialDefinition.Variant variant1 : pass1.variantList) {
+                            boolean found = false;
+                            for (CompiledMaterialDefinition.Variant variant2 : pass2.variantList) {
+                                if (variant1.flags.equals(variant2.flags)) {
+                                    variant1.shaderCodeMap.putAll(variant2.shaderCodeMap);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                System.out.println("Merge failed : no variant with the same flags found");
+                                return;
+                            }
+                        }
+                    } else {
+                        System.out.println("Merge failed: pass " + passEntry.getKey() + " not same");
+                        return;
+                    }
+                }
+            } else {
+                System.out.println("Merge failed: CompiledMaterialDefinition not same");
+                return;
+            }
+        }
+
+        if (merged != null) {
+            ByteBuf buf = new ByteBuf();
+            merged.saveTo(buf, merged.encryptionVariant);
+            FileUtil.write(new File(outputDir, name), buf.toByteArray());
+        }
     }
 
     public static String findCompilerPath(String compilerPath) {
@@ -513,6 +615,8 @@ public class Main {
         String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         if (path.endsWith(".jar")) {
             jarName = path.substring(path.lastIndexOf("/") + 1);
+        } else if (path.endsWith(".exe")) {
+            return path.substring(path.lastIndexOf("/") + 1);
         }
         return "java -jar " + jarName;
     }

@@ -51,6 +51,9 @@ public class Args {
     @Parameter(names = {"-m", "--merge-data"})
     public boolean mergeData = false;
 
+    @Parameter(names = {"--merge-bin"})
+    public boolean mergeBin = false;
+
     @Parameter(names = {"-o", "--output"})
     public File outputDir;
 

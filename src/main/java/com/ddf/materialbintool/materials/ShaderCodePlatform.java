@@ -11,7 +11,7 @@ public enum ShaderCodePlatform {
     GLSL_430,      //?
     ESSL_100,      //Android
     ESSL_300,      //?
-    ESSL_310,      //?
+    ESSL_310,      //Android (since 1.20.20.20)
     Metal,         //iOS
     Vulkan,        //Nintendo Switch
     Nvn,           //?

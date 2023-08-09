@@ -56,7 +56,7 @@ public class BgfxShaderCompiler {
     }
 
     public byte[] compile(File input, File varyingDef, Defines defines, ShaderCodePlatform platform, ShaderStage type) {
-        File tempOutputFile = new File(tempDir, System.nanoTime() + Integer.toHexString(ThreadLocalRandom.current().nextInt()) + ".bin");
+        File tempOutputFile = new File(tempDir, input.getName() + "_" + System.nanoTime() + Integer.toHexString(ThreadLocalRandom.current().nextInt()) + ".bin");
         int code = compile(input, varyingDef, tempOutputFile, defines, platform, type);
         if (code == 0) {
             byte[] output = tempOutputFile.exists() ? FileUtil.readAllBytes(tempOutputFile) : null;
