@@ -13,6 +13,7 @@ import com.ddf.materialbintool.main.util.UsageFormatter;
 import com.ddf.materialbintool.materials.CompiledMaterialDefinition;
 import com.ddf.materialbintool.materials.PlatformShaderStage;
 import com.ddf.materialbintool.materials.definition.EncryptionVariants;
+import com.ddf.materialbintool.materials.definition.SamplerDefinition;
 import com.ddf.materialbintool.util.ByteBuf;
 import com.google.gson.*;
 
@@ -282,6 +283,10 @@ public class Main {
 
                     Defines defines = new Defines();
                     defines.addDefine("BGFX_CONFIG_MAX_BONES", "4");
+
+                    for (Map.Entry<String, SamplerDefinition> samplerDefinitionEntry: cmd.samplerDefinitionMap.entrySet()) {
+                        defines.addDefine("s_" + samplerDefinitionEntry.getKey() + "_REG", Integer.toString(Short.toUnsignedInt(samplerDefinitionEntry.getValue().reg)));
+                    }
 
                     if (materialDefines != null && materialDefines.has(cmd.name)) {
                         for (JsonElement element : materialDefines.getAsJsonArray(cmd.name)) {
