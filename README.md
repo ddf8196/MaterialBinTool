@@ -89,7 +89,7 @@ RenderChunk/
 
 ## 关于sc文件
 sc是bgfx的基于GLSL的跨平台着色器(`bgfx's shaderc flavor of GLSL`), 可通过`shaderc`编译为各个平台的着色器   
-sc的大多数语法GLSL相同, 但也有部分区别, 编写时需要按照bgfx的标准, 具体区别可在bgfx的文档查看: [shader-compiler-shaderc](https://bkaradzic.github.io/bgfx/tools.html#shader-compiler-shaderc)
+sc的大多数语法GLSL相同, 但也有部分区别, 编写时bgfx有修改的部分需要按照bgfx的标准, 其余部分需要严格遵守GLSL规范, 具体区别可在bgfx的文档查看: [shader-compiler-shaderc](https://bkaradzic.github.io/bgfx/tools.html#shader-compiler-shaderc)
 
 ## sc着色器源文件获取
 可在[RenderDragonSourceCodeInv](https://github.com/SurvivalApparatusCommunication/RenderDragonSourceCodeInv) 仓库中获取部分已经整理好的sc源文件
