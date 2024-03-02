@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Main {
     public static final FormatVersion CURRENT_FORMAT_VERSION = FormatVersion.V1;
 
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static File tempDir;
 
     public static void main(String[] args1) {
@@ -51,6 +51,10 @@ public class Main {
         if (args.help) {
             jCommander.usage();
             return;
+        }
+
+        if (args.noPrettyPrint) {
+            GSON = new GsonBuilder().create();
         }
 
         if (args.unpack) {

@@ -54,6 +54,9 @@ public class Args {
     @Parameter(names = {"--merge-bin"})
     public boolean mergeBin = false;
 
+    @Parameter(names = {"--no-pretty-print"})
+    public boolean noPrettyPrint = false;
+
     @Parameter(names = {"-o", "--output"})
     public File outputDir;
 
