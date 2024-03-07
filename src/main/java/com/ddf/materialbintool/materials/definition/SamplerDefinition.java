@@ -18,6 +18,9 @@ public class SamplerDefinition {
     public boolean hasDefaultTexture;
     public String defaultTexture; //white
 
+    public boolean hasUnknownString;
+    public String unknownString;
+
     public boolean hasCustomTypeInfo;
     public CustomTypeInfo customTypeInfo;
 
@@ -37,6 +40,11 @@ public class SamplerDefinition {
         hasDefaultTexture = buf.readBoolean();
         if (hasDefaultTexture) {
             defaultTexture = buf.readStringLE();
+        }
+
+        hasUnknownString = buf.readBoolean();
+        if (hasUnknownString) {
+            unknownString = buf.readStringLE();
         }
 
         hasCustomTypeInfo = buf.readBoolean();
@@ -60,6 +68,11 @@ public class SamplerDefinition {
         buf.writeBoolean(hasDefaultTexture);
         if (hasDefaultTexture) {
             buf.writeStringLE(defaultTexture);
+        }
+
+        buf.writeBoolean(hasUnknownString);
+        if (hasUnknownString) {
+            buf.writeStringLE(unknownString);
         }
 
         buf.writeBoolean(hasCustomTypeInfo);
