@@ -79,7 +79,9 @@ public class ShaderInput {
         TexCoord5(7, 5),
         TexCoord6(7, 6),
         TexCoord7(7, 7),
-        TexCoord8(7, 8);
+        TexCoord8(7, 8),
+        //Unknown_8_0(8, 0),
+        FrontFacing(9, 0);
 
         public byte index;
         public byte subIndex;
