@@ -6,7 +6,7 @@ import com.ddf.materialbintool.bgfx.BgfxShader;
 import com.ddf.materialbintool.main.compiler.BgfxShaderCompiler;
 import com.ddf.materialbintool.main.compiler.Defines;
 import com.ddf.materialbintool.main.compiler.VaryingDefPreprocessor;
-import com.ddf.materialbintool.main.json.FormatVersion;
+import com.ddf.materialbintool.main.json.JsonFormatVersion;
 import com.ddf.materialbintool.main.util.FileUtil;
 import com.ddf.materialbintool.main.util.StringUtil;
 import com.ddf.materialbintool.main.util.UsageFormatter;
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
-    public static final FormatVersion CURRENT_FORMAT_VERSION = FormatVersion.V1;
+    public static final JsonFormatVersion CURRENT_FORMAT_VERSION = JsonFormatVersion.V1;
 
     private static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static File tempDir;
@@ -812,15 +812,15 @@ public class Main {
         File inputDir = jsonFile.getParentFile();
         JsonObject jsonObject = JsonParser.parseString(FileUtil.readString(jsonFile)).getAsJsonObject();
 
-        FormatVersion formatVersion;
-        String formatVersionStr = jsonObject.has("formatVersion") ? jsonObject.get("formatVersion").getAsString() : FormatVersion.V1.name();
-        if (FormatVersion.contains(formatVersionStr)) {
-            formatVersion = FormatVersion.valueOf(formatVersionStr);
+        JsonFormatVersion jsonFormatVersion;
+        String formatVersionStr = jsonObject.has("formatVersion") ? jsonObject.get("formatVersion").getAsString() : JsonFormatVersion.V1.name();
+        if (JsonFormatVersion.contains(formatVersionStr)) {
+            jsonFormatVersion = JsonFormatVersion.valueOf(formatVersionStr);
         } else {
-            throw new RuntimeException("Unsupported format version: " + formatVersionStr);
+            throw new RuntimeException("Unsupported json format version: " + formatVersionStr);
         }
 
-        if (formatVersion != CURRENT_FORMAT_VERSION) {
+        if (jsonFormatVersion != CURRENT_FORMAT_VERSION) {
             //TODO: Upgrade to current format version
         }
 

@@ -12,12 +12,16 @@ public class SamplerDefinition {
     public SamplerType type;
     public String textureFormat; //空字符串 / rgba16f / rgba8 / rg16f / r32ui
 
+    //since 1.18.0.20 beta
     public int unknownInt; //1
+
+    //since 1.19.60.20 preview
     public byte unknownByte;
 
     public boolean hasDefaultTexture;
     public String defaultTexture; //white
 
+    //since 1.20.80.21 preview
     public boolean hasUnknownString;
     public String unknownString;
 
