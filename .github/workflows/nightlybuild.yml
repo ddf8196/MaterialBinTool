@@ -55,15 +55,19 @@ jobs:
     #
     # - name: Build with Gradle 8.5
     #   run: gradle build
-name: Publish To releases as nightlybuild
-    - name: Update nightly release
-      uses: eine/tip@master
-      with:
-        tag: nightly
-        rm: true
-        token: ${{ secrets.TOKEN }}
-        files: build/libs/*.*
-    - name: Create info file
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update nightly release
+        uses: eine/tip@master
+        with:
+          tag: nightly
+          rm: true
+          token: ${{ secrets.TOKEN }}
+          files: build/libs/*.*
+      
+      - name: Create info file
         run: |
-        echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
-        > build/libs/info.txt
+          echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
+          > build/libs/info.txt
