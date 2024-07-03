@@ -41,7 +41,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: MaterialBinTool_0.9.0-Debug
-        path: MaterialBinTool/build/libs/MaterialBinTool-0.9.0.jar
+        path: build/libs/MaterialBinTool-0.9.0.jar
         retention-days: 60
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
