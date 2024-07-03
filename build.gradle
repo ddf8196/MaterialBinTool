@@ -13,15 +13,11 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 repositories { 
     mavenCentral() 
-    flatDir {
-        dirs 'lib'
-    }
 }
 dependencies {
     implementation project(":bouncycastle")
     implementation project(":jcpp")
     implementation 'com.google.code.gson:gson:2.9.1'
-    implementation 'com.beust:jcommander:1.82'
     compile files('lib/jcommander-1.82.jar')
 }
 
