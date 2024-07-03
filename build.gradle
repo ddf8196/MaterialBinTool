@@ -33,10 +33,3 @@ shadowJar {
         attributes 'Main-Class': 'com.ddf.materialbintool.main.Main'
     }
 }
-sourceSets {
-    generated {
-        java {
-            srcDir "$projectDir/builds/"
-        }
-    }
-}
