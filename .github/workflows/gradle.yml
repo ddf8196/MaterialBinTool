@@ -37,8 +37,8 @@ jobs:
     - name: Build with Gradle Wrapper
       run: gradle build
     - name: 'Upload Artifact'
-    uses: actions/upload-artifact@v4
-    with:
+      uses: actions/upload-artifact@v4
+      with:
       name: MaterialBinTool_0.9.0-Debug
       path: MaterialBinTool/build/libs/MaterialBinTool-0.9.0.jar
       retention-days: 60
