@@ -28,11 +28,10 @@ shadowJar {
     }
 }
 jar {
-     from {
-          configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-     }    
-     manifest {
+    manifest {
         attributes 'Main-Class': 'com.ddf.materialbintool.main.Main'
     }
-    }  
-}  
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+} 
