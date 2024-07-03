@@ -1,3 +1,7 @@
+> [!NOTE]
+> This Fork is prebuilt with artifacts auto build if any update from original materialbintool dev this gonna update not as quick as you think
+
+
 # MaterialBinTool
 RenderDragon .material.bin文件解包/打包/编译工具
 
