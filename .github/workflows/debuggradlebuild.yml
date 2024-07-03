@@ -36,7 +36,7 @@ jobs:
 #      with:
 #         gradle-version: '7.6'
     - name: Build with Gradle Wrapper
-      run: chmod +x gradlew && ./gradlew build
+      run: chmod +x gradlew && ./gradlew shadowJar
     - name: Test Jars
       run: java -jar build/libs/MaterialBinTool-0.9.0_debug.jar
     - name: Test By gradlew
