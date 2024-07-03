@@ -1,3 +1,4 @@
+[![Build](https://github.com/Secondyou/MaterialBinTool/actions/workflows/gradle.yml/badge.svg?branch=main)](https://github.com/Secondyou/MaterialBinTool/actions/workflows/gradle.yml)
 > [!NOTE]
 > This Fork is prebuilt with artifacts auto build if any update from original materialbintool dev this gonna update not as quick as you think
 
