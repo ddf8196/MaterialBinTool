@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '6.0.0'
     id 'maven-publish'
-    id 'jcommander'
 }
 
 apply plugin: 'maven-publish'
