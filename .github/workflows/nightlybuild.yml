@@ -5,7 +5,7 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Debug Build, Release, and Artifacts
+name: Debug Build and Update Release
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required for creating releases
+      contents: write  # Required for creating/updating releases
 
     steps:
     - uses: actions/checkout@v4
@@ -34,9 +34,13 @@ jobs:
     - name: Test Jars
       run: java -jar build/libs/MaterialBinTool-0.9.0_debug-all.jar
     
+    - name: Get current date
+      id: date
+      run: echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+
     - name: Create info file
       run: |
-        echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
+        echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: ${{ steps.date.outputs.DATE }}" \
         > build/libs/info.txt
 
     - name: Upload Artifact
@@ -48,37 +52,23 @@ jobs:
           build/libs/info.txt
         retention-days: 60
 
-    - name: Get current date
-      id: date
-      run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+    - name: Update Release
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: nightly
-        release_name: Nightly Build ${{ steps.date.outputs.DATE }}
-        draft: false
+        tag_name: release
+        name: Latest Build
+        body: |
+          ⚠️ **WARNING: This is an automatically updated release. It may be unstable or contain bugs.** ⚠️
+
+          Last updated: ${{ steps.date.outputs.DATE }}
+
+          This release contains the latest build of the project. It is automatically updated with each push to the main branch.
+          Please use with caution and report any issues you encounter.
+
+          For more stable versions, please check our tagged releases.
+        files: |
+          build/libs/MaterialBinTool-0.9.0_debug-all.jar
+          build/libs/info.txt
         prerelease: true
-
-    - name: Upload Release Asset (JAR)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/libs/MaterialBinTool-0.9.0_debug-all.jar
-        asset_name: MaterialBinTool-0.9.0_debug-all.jar
-        asset_content_type: application/java-archive
-
-    - name: Upload Release Asset (Info)
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/libs/info.txt
-        asset_name: info.txt
-        asset_content_type: text/plain
