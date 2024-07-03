@@ -1,8 +1,8 @@
 [![Build](https://github.com/Secondyou/MaterialBinTool/actions/workflows/gradle.yml/badge.svg?branch=main)](https://github.com/Secondyou/MaterialBinTool/actions/workflows/gradle.yml)
 > [!NOTE]
-> This Fork is prebuilt with artifacts auto build if any update from original materialbintool dev this gonna update not as quick as you think
-
-
+> Loem
+> [!IMPORTANT]
+> Loem
 # MaterialBinTool
 RenderDragon .material.bin文件解包/打包/编译工具
 
