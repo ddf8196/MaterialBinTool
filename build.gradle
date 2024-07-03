@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '6.0.0'
     id 'maven-publish'
+    id 'jcommander'
 }
 
 apply plugin: 'maven-publish'
@@ -17,7 +18,6 @@ repositories {
 dependencies {
     implementation project(":bouncycastle")
     implementation project(":jcpp")
-
     implementation 'com.google.code.gson:gson:2.9.1'
     implementation 'com.beust:jcommander:1.82'
 }
