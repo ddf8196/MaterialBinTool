@@ -5,7 +5,7 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Debug Build and Release
+name: Debug Build, Release, and Artifacts
 
 on:
   push:
@@ -18,8 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # This is required for creating releases
-    
+      contents: write  # Required for creating releases
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
@@ -39,28 +39,41 @@ jobs:
         echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
         > build/libs/info.txt
 
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MaterialBinTool_0.9.0-Debug
+        path: |
+          build/libs/MaterialBinTool-0.9.0_debug-all.jar
+          build/libs/info.txt
+        retention-days: 60
+
+    - name: Get current date
+      id: date
+      run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
       with:
-        tag_name: nightly-${{ github.sha }}
-        release_name: Nightly Build ${{ github.sha }}
+        tag_name: nightly
+        release_name: Nightly Build ${{ steps.date.outputs.DATE }}
         draft: false
         prerelease: true
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset (JAR)
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./build/libs/MaterialBinTool-0.9.0_debug-all.jar
         asset_name: MaterialBinTool-0.9.0_debug-all.jar
         asset_content_type: application/java-archive
 
-    - name: Upload Info File
+    - name: Upload Release Asset (Info)
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
