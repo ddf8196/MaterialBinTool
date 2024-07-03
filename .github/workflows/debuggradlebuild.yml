@@ -37,8 +37,10 @@ jobs:
 #         gradle-version: '7.6'
     - name: Build with Gradle Wrapper
       run: chmod +x gradlew && ./gradlew build
-    - name: Test
+    - name: Test Jars
       run: java -jar build/libs/MaterialBinTool-0.9.0_debug.jar
+    - name: Test By gradlew
+      run: ./gradlew testReport
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v4
       with:
