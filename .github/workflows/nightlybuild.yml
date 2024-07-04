@@ -1,0 +1,74 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: Debug Build and Update Release
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for creating/updating releases
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Build with Gradle Wrapper
+      run: chmod +x gradlew && ./gradlew shadowJar
+    
+    - name: Test Jars
+      run: java -jar build/libs/MaterialBinTool-0.9.0_debug-all.jar
+    
+    - name: Get current date
+      id: date
+      run: echo "DATE=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+
+    - name: Create info file
+      run: |
+        echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: ${{ steps.date.outputs.DATE }}" \
+        > build/libs/info.txt
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MaterialBinTool_0.9.0-Debug
+        path: |
+          build/libs/MaterialBinTool-0.9.0_debug-all.jar
+          build/libs/info.txt
+        retention-days: 60
+
+    - name: Update Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: release
+        name: Latest Build
+        body: |
+          ⚠️ **WARNING: This is an automatically updated release. It may be unstable or contain bugs.** ⚠️
+
+          Last updated: ${{ steps.date.outputs.DATE }}
+
+          This release contains the latest build of the project. It is automatically updated with each push to the main branch.
+          Please use with caution and report any issues you encounter.
+
+          For more stable versions, please check our tagged releases.
+        files: |
+          build/libs/MaterialBinTool-0.9.0_debug-all.jar
+          build/libs/info.txt
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
