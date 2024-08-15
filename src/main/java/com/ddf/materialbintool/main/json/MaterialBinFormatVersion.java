@@ -32,9 +32,15 @@ public enum MaterialBinFormatVersion {
     //Added SamplerDefinition.unknownByte (which seems always to be the same as SamplerDefinition.reg)
     V1_19_60_20,
 
-    //1.20.80.21 preview - current preview
-    //1.20.80.05 - current release
+    //1.20.80.21 preview - 1.21.20.21 preview
+    //1.20.80.05 - 1.21.2.02
     //CompiledMaterialDefinition version 22
     //Added SamplerDefinition.hasUnknownString and SamplerDefinition.unknownString
-    v1_20_80_21;
+    v1_20_80_21,
+
+    //1.21.20.22 preview - current preview
+    //1.21.20.03 - current release
+    //CompiledMaterialDefinition version 22
+    //Added SamplerDefinition.hasUnknownByte2 and SamplerDefinition.unknownByte2
+    V1_21_20_22
 }

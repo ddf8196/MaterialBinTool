@@ -18,6 +18,10 @@ public class SamplerDefinition {
     //since 1.19.60.20 preview
     public byte unknownByte;
 
+    //since 1.21.20.22 preview
+    public boolean hasUnknownByte2;
+    public byte unknownByte2;
+
     public boolean hasDefaultTexture;
     public String defaultTexture; //white
 
@@ -40,6 +44,11 @@ public class SamplerDefinition {
         textureFormat = buf.readStringLE();
         unknownInt = buf.readIntLE(); //1
         unknownByte = buf.readByte();
+
+        hasUnknownByte2 = buf.readBoolean();
+        if (hasUnknownByte2) {
+            unknownByte2 = buf.readByte();
+        }
 
         hasDefaultTexture = buf.readBoolean();
         if (hasDefaultTexture) {
@@ -68,6 +77,11 @@ public class SamplerDefinition {
         buf.writeStringLE(textureFormat);
         buf.writeIntLE(unknownInt);
         buf.writeByte(unknownByte);
+
+        buf.writeBoolean(hasUnknownByte2);
+        if (hasUnknownByte2) {
+            buf.writeByte(unknownByte2);
+        }
 
         buf.writeBoolean(hasDefaultTexture);
         if (hasDefaultTexture) {
