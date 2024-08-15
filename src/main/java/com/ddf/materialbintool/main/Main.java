@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
-    public static final JsonFormatVersion CURRENT_FORMAT_VERSION = JsonFormatVersion.V2;
+    public static final JsonFormatVersion CURRENT_FORMAT_VERSION = JsonFormatVersion.V3;
 
     private static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static File tempDir;

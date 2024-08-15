@@ -36,7 +36,7 @@ public enum MaterialBinFormatVersion {
     //1.20.80.05 - 1.21.2.02
     //CompiledMaterialDefinition version 22
     //Added SamplerDefinition.hasUnknownString and SamplerDefinition.unknownString
-    v1_20_80_21,
+    V1_20_80_21,
 
     //1.21.20.22 preview - current preview
     //1.21.20.03 - current release
